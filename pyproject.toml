@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "kitsune_ai"
+version = "0.1.0"
+description = ""
+authors = ["Robson Zagre Junior <r.zagre.jr@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "~3.10"
+opencv-python = "^4.5.5.64"
+numpy = "^1.22.4"
+glob2 = "^0.7"
+mss = "^6.1.0"
+nes-py = "^8.1.8"
+tqdm= "^4.64.0"
+gym = "^0.23.1"
+pyglet = "^1.5.26"
+
+[tool.poetry.dev-dependencies]
+
