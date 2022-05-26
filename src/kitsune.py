@@ -1,8 +1,14 @@
 import pyglet
 import time
+import cv2 as cv
 
 from src.view import KitsuneView
 from src.environment import KitsuneEnv 
+
+from src.config import (
+    screen,
+    kitsune_images,
+)
 
 from src.utils import (
     get_pyglet_image
@@ -12,13 +18,26 @@ from src.utils import (
 class Kitsune():
 
     def __init__(self, rom, sprites_paths, env_actions):
-        self.window = pyglet.window.Window()
+        self._window = pyglet.window.Window(width=screen['w'],height=screen['h'])
 
-        self.env = KitsuneEnv(rom, env_actions, self.window)
+        self.env = KitsuneEnv(rom, env_actions, self._window)
         self.view = KitsuneView(sprites_paths)
 
-        self.window.event(self.on_draw)
+        self.images = {
+            "normal": get_pyglet_image(
+                cv.cvtColor(
+                    cv.imread(kitsune_images['normal'], 3),
+                    cv.COLOR_BGR2RGB
+                )
+            )
+        }
+
+        self._window.event(self.on_draw)
         self.play()
+
+
+    def get_kitsune_image(self):
+        return self.images['normal']
  
 
     def _play_game(self, dt):
@@ -44,48 +63,46 @@ class Kitsune():
 
 
     def on_draw(self):
-        self.window.clear()
-        label = pyglet.text.Label(f'FPS: {pyglet.clock.get_fps()}',
-            font_name='Times New Roman',
-            font_size=18,
-            x=self.window.width//2, y=self.window.height//2,
-            anchor_x='center', anchor_y='center'
-        )
-        if self.env.frame is not None:
-            get_pyglet_image(self.env.frame).blit(0,0, width=self.window.width/2, height=self.window.height)
-
-        if self.view.frame_obj is not None:
-            get_pyglet_image(self.view.frame_obj).blit(self.window.width/2,0, width=self.window.width/2, height=self.window.height)
-        label.draw()
-
-
-    def show(self, frame):
-        """
-        Show an array of pixels on the window.
-        Args:
-            frame (numpy.ndarray): the frame to show on the window
-        Returns:
-            None
-        """
-        # check that the frame has the correct dimensions
-        if len(frame.shape) != 3:
-            raise ValueError('frame should have shape with only 3 dimensions')
-        # open the window if it isn't open already
-        if not self.is_open:
-            self.open()
-        # prepare the window for the next frame
         self._window.clear()
-        self._window.switch_to()
-        self._window.dispatch_events()
-        # create an image data object
-        image = self.pyglet.image.ImageData(
-            frame.shape[1],
-            frame.shape[0],
-            'RGB',
-            frame.tobytes(),
-            pitch=frame.shape[1]*-3
+
+        # Game Image
+        if self.env.frame is not None:
+            get_pyglet_image(self.env.frame).blit(
+                x=0, y=0,
+                width=self._window.width//2, height=self._window.height//2
+            )
+
+        # Kitsune View
+        if self.view.frame_obj is not None:
+            get_pyglet_image(self.view.frame_obj).blit(
+                self._window.width//2,0,
+                width=self._window.width//2, height=self._window.height//2
+            )
+
+        # FPS
+        fps_label = pyglet.text.Label(f'FPS: {pyglet.clock.get_fps()}',
+            font_name='Times New Roman',
+            font_size=12,
+            x=0, y=self._window._height-20,
+            anchor_x='left', anchor_y='top'
         )
-        # send the image to the window
-        image.blit(0, 0, width=self._window.width, height=self._window.height)
-        self._window.flip()
+        fps_label.draw()
+
+        # Mode
+        mode = "Keyboard" if self.env.key_mode else "Auto"
+        mode_label = pyglet.text.Label(f'Mode: {mode}',
+            font_name='Times New Roman',
+            font_size=12,
+            x=self._window.width, y=self._window._height-20,
+            anchor_x='right', anchor_y='top'
+        )
+        mode_label.draw()
+        
+        # Kitsune
+        self.get_kitsune_image().blit(
+            self._window.width//4,self._window.height//2,
+            width=self._window.width//2, height=self._window.height//2
+        )
+
+
 
