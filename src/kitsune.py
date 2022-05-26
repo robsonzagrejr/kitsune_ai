@@ -1,4 +1,5 @@
 import pyglet
+import time
 
 from src.view import KitsuneView
 from src.environment import KitsuneEnv 
@@ -16,15 +17,17 @@ class Kitsune():
         self.play()
  
 
-    @staticmethod
-    def _play_game(self):
-        #objects = self.view.find_objects(self.env.frame)
-        print("play_game")
-        pass
+    def _play_game(self, dt):
+        start_time = time.time()
+        frame = self.env.frame
+        objects = self.view.find_objects(frame)
+        self.view.obj_frame = self.view.get_pyglet_obj_image(frame, objects)
+        #print(f"TEMPO: {time.time() - start_time}")
+
 
 
     def play(self):
-        pyglet.clock.schedule_interval(self._play_game, .5)
+        pyglet.clock.schedule_interval(self._play_game, 0.05)
 
 
     def stop_play(self):
@@ -45,6 +48,9 @@ class Kitsune():
         )
         if self.env.pyglet_frame:
             self.env.pyglet_frame.blit(0,0, width=self.window.width/2, height=self.window.height)
+
+        if self.view.obj_frame:
+            self.view.obj_frame.blit(self.window.width/2,0, width=self.window.width/2, height=self.window.height)
         label.draw()
 
 

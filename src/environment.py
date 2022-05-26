@@ -112,24 +112,3 @@ class KitsuneEnv():
         """Respond to a key release on the keyboard."""
         self._handle_key_event(symbol, False)
 
-    """
-    @window.event
-    @staticmethod
-    def on_key_press(symbol, modifiers):
-        print('A key was pressed')
-
-
-    @window.event
-    @staticmethod
-    def on_draw():
-        window.clear()
-        label = pyglet.text.Label(f'FPS: {clock.get_fps()}',
-          font_name='Times New Roman',
-          font_size=36,
-          x=window.width//2, y=window.height//2,
-          anchor_x='center', anchor_y='center'
-        )
-        label.draw()
-
-    """
-
