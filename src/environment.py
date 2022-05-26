@@ -1,43 +1,42 @@
-"""A method to play gym environments using human IO inputs."""
-import gym
-import time
-from pyglet import clock
+"""
+https://github.com/Kautenja/nes-py/blob/master/nes_py/app/play_human.py
+https://github.com/Kautenja/nes-py/blob/master/nes_py/_image_viewer.py
+"""
 import pyglet
-from nes_py._image_viewer import ImageViewer
 from nes_py.wrappers import JoypadSpace
 
 from src.game_env import SuperMarioBrosEnv
 
 
-# the sentinel value for "No Operation"
+# the sentinel value for "No Operation
 _NOP = 0
 
 class KitsuneEnv():
 
     def __init__(self, rom, actions, window):
         env = SuperMarioBrosEnv(rom)
-        self.env = JoypadSpace(env, actions)
-        self.window = window
-        if hasattr(env, 'get_keys_to_action'):
-            keys_to_action = self.env.get_keys_to_action()
-        elif hasattr(env.unwrapped, 'get_keys_to_action'):
-            keys_to_action = self.env.unwrapped.get_keys_to_action()
-        else:
-            raise ValueError('env has no get_keys_to_action method')
-        
-
-        self.keys_to_action = keys_to_action
+        self._env = JoypadSpace(env, actions)
+        self._window = window
+        self._fps = self._env.metadata['video.frames_per_second']
         self.frame = None
-        self.pyglet_frame = None
+        self.key_mode = True
+        self.action = 0
+
+        # Map between pyglet and nes-py
         self.KEY_MAP = {
             pyglet.window.key.ENTER: ord('\r'),
             pyglet.window.key.SPACE: ord(' '),
         }
-        self.window.event(self.on_key_press)
-        self.window.event(self.on_key_release)
-        self.relevant_keys = set(sum(map(list, keys_to_action.keys()), []))
+
+        self.keys_to_action = self._env.get_keys_to_action()
+        self.relevant_keys = set(sum(map(list, self.keys_to_action.keys()), []))
         self._pressed_keys = []
 
+        # Informing the keyboard functions handler
+        self._window.event(self.on_key_press)
+        self._window.event(self.on_key_release)
+
+        # Making a scheduler to game loop
         self.start_game()
 
 
@@ -46,37 +45,6 @@ class KitsuneEnv():
         """Return a sorted list of the pressed keys."""
         return tuple(sorted(self._pressed_keys))
        
-
-    def _run_game(self, dt):
-        action = self.keys_to_action.get(self.pressed_keys, _NOP)
-        next_state, reward, done, _ = self.env.step(action)
-        self.set_frame(self.env.unwrapped.screen)
-        # pass the observation data through the callback
-        state = next_state
-        # shutdown if the escape key is pressed
-        #if viewer.is_escape_pressed:
-        #    self.stop()
-
-
-    def start_game(self):
-        target_frame_duration = 1 / self.env.metadata['video.frames_per_second']
-        clock.schedule_interval(self._run_game, target_frame_duration)
-
-
-    def stop_game(self):
-        clock.unschedule(self._run_game)
-
-
-    def set_frame(self, frame):
-        self.frame = frame
-        self.pyglet_frame = pyglet.image.ImageData(
-            frame.shape[1],
-            frame.shape[0],
-            'RGB',
-            frame.tobytes(),
-            pitch=frame.shape[1]*-3
-        )
-
 
     def _handle_key_event(self, symbol, is_press):
         """
@@ -89,18 +57,22 @@ class KitsuneEnv():
         """
         # remap the key to the expected domain
         symbol = self.KEY_MAP.get(symbol, symbol)
-        # check if the symbol is the escape key
-        if symbol == pyglet.window.key.ESCAPE:
-            self._is_escape_pressed = is_press
+
+        # Check if mode was change
+        if symbol == pyglet.window.key.M and not is_press:
+            print(f"Change mode key_mode={self.key_mode}")
+            self.key_mode = not self.key_mode
             return
-        # make sure the symbol is relevant
-        if self.relevant_keys is not None and symbol not in self.relevant_keys:
-            return
-        # handle the press / release by appending / removing the key to pressed
-        if is_press:
-            self._pressed_keys.append(symbol)
-        else:
-            self._pressed_keys.remove(symbol)
+        # If in key_mode, validate moviment
+        if self.key_mode:
+            # make sure the symbol is relevant
+            if self.relevant_keys is not None and symbol not in self.relevant_keys:
+                return
+            # handle the press / release by appending / removing the key to pressed
+            if is_press:
+                self._pressed_keys.append(symbol)
+            else:
+                self._pressed_keys.remove(symbol)
 
 
     def on_key_press(self, symbol, modifiers):
@@ -111,4 +83,29 @@ class KitsuneEnv():
     def on_key_release(self, symbol, modifiers):
         """Respond to a key release on the keyboard."""
         self._handle_key_event(symbol, False)
+
+
+
+    @property
+    def _action(self):
+        if self.key_mode:
+            return self.keys_to_action.get(self.pressed_keys, _NOP)
+        else:
+            return self.action
+
+
+    def _run_game(self, dt):
+        next_state, reward, done, _ = self._env.step(self._action)
+        self.frame = self._env.unwrapped.screen
+        state = next_state
+
+
+    def start_game(self):
+        frame_duration = 1 / self._fps
+        pyglet.clock.schedule_interval(self._run_game, frame_duration)
+
+
+    def stop_game(self):
+        pyglet.clock.unschedule(self._run_game)
+
 
