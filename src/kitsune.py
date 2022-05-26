@@ -4,6 +4,10 @@ import time
 from src.view import KitsuneView
 from src.environment import KitsuneEnv 
 
+from src.utils import (
+    get_pyglet_image
+)
+
 
 class Kitsune():
 
@@ -11,8 +15,8 @@ class Kitsune():
         self.window = pyglet.window.Window()
 
         self.env = KitsuneEnv(rom, env_actions, self.window)
-
         self.view = KitsuneView(sprites_paths)
+
         self.window.event(self.on_draw)
         self.play()
  
@@ -21,13 +25,14 @@ class Kitsune():
         start_time = time.time()
         frame = self.env.frame
         objects = self.view.find_objects(frame)
-        self.view.obj_frame = self.view.get_pyglet_obj_image(frame, objects)
+        self.view.frame_obj = self.view.get_image_with_objects(frame, objects)
+        self.env.action = 1
         #print(f"TEMPO: {time.time() - start_time}")
 
 
 
     def play(self):
-        pyglet.clock.schedule_interval(self._play_game, 0.05)
+        pyglet.clock.schedule_interval(self._play_game, 0.1)
 
 
     def stop_play(self):
@@ -46,11 +51,11 @@ class Kitsune():
             x=self.window.width//2, y=self.window.height//2,
             anchor_x='center', anchor_y='center'
         )
-        if self.env.pyglet_frame:
-            self.env.pyglet_frame.blit(0,0, width=self.window.width/2, height=self.window.height)
+        if self.env.frame is not None:
+            get_pyglet_image(self.env.frame).blit(0,0, width=self.window.width/2, height=self.window.height)
 
-        if self.view.obj_frame:
-            self.view.obj_frame.blit(self.window.width/2,0, width=self.window.width/2, height=self.window.height)
+        if self.view.frame_obj is not None:
+            get_pyglet_image(self.view.frame_obj).blit(self.window.width/2,0, width=self.window.width/2, height=self.window.height)
         label.draw()
 
 

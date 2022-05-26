@@ -11,7 +11,6 @@ from src.config import (
     threshold
 )
 
-
 class KitsuneView():
     def __init__(self, sprites_path):
         self.sprites_path = sprites_path
@@ -30,7 +29,9 @@ class KitsuneView():
             info = sprite_path.split("/")
             name = info[-1].split(".")[0].split("-")[0]
             img = np.array(cv.imread(sprite_path, 0))
+            img_flip = cv.flip(img, 1)
             w, h = img.shape[::-1]
+            # Add image
             self.sprites.append({
                 "name": name,
                 "type": info[-2],
@@ -39,7 +40,16 @@ class KitsuneView():
                 "path": sprite_path,
                 "size": (w, h)
             })
-        self.obj_frame = None
+            # Add mirroed image
+            self.sprites.append({
+                "name": name,
+                "type": info[-2],
+                "img": img_flip,
+                "color": colors[info[-2]],
+                "path": sprite_path,
+                "size": (w, h)
+            })
+        self.frame_obj = None
 
 
     def find_objects(self, image):
@@ -49,6 +59,7 @@ class KitsuneView():
             sprite_template = sprite["img"]
             result = cv.matchTemplate(np.array(img_gray), np.array(sprite_template), cv.TM_CCOEFF_NORMED)
             locales = np.where( result >= threshold)
+
             sprint_pts = [ pt for pt in zip(*locales[::-1])]
             if sprint_pts:
                 objects.append(
@@ -72,15 +83,4 @@ class KitsuneView():
                 cv.rectangle(img_with_objs, pt, (pt[0] +obj['w'], pt[1] + obj['h']), obj["color"], 2)
 
         return img_with_objs 
-
-
-    def get_pyglet_obj_image(self, image, objects):
-        img_with_objs = self.get_image_with_objects(image, objects)
-        return pyglet.image.ImageData(
-            img_with_objs.shape[1],
-            img_with_objs.shape[0],
-            'RGB',
-            img_with_objs.tobytes(),
-            pitch=img_with_objs.shape[1]*-3
-        )
 
