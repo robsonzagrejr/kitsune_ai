@@ -1,25 +1,80 @@
-from pyglet import clock
 import pyglet
 
 from src.view import KitsuneView
 from src.environment import KitsuneEnv 
 
+
 class Kitsune():
 
-    def __init__(self, rom, sprites_paths):
-        self.view = KitsuneView(sprites_paths)
-        self.env = KitsuneEnv(rom)
+    def __init__(self, rom, sprites_paths, env_actions):
+        self.window = pyglet.window.Window()
 
-        self.env.start()
+        self.env = KitsuneEnv(rom, env_actions, self.window)
+
+        self.view = KitsuneView(sprites_paths)
+        self.window.event(self.on_draw)
+        self.play()
  
 
     @staticmethod
     def _play_game(self):
+        #objects = self.view.find_objects(self.env.frame)
         print("play_game")
         pass
 
 
     def play(self):
-        clock.schedule_interval(self._play_game, .5)
+        pyglet.clock.schedule_interval(self._play_game, .5)
+
+
+    def stop_play(self):
+        pyglet.clock.unschedule(self._play_game)
+
+
+    def start(self):
         pyglet.app.run()
+
+
+    def on_draw(self):
+        self.window.clear()
+        label = pyglet.text.Label(f'FPS: {pyglet.clock.get_fps()}',
+            font_name='Times New Roman',
+            font_size=18,
+            x=self.window.width//2, y=self.window.height//2,
+            anchor_x='center', anchor_y='center'
+        )
+        if self.env.pyglet_frame:
+            self.env.pyglet_frame.blit(0,0, width=self.window.width/2, height=self.window.height)
+        label.draw()
+
+
+    def show(self, frame):
+        """
+        Show an array of pixels on the window.
+        Args:
+            frame (numpy.ndarray): the frame to show on the window
+        Returns:
+            None
+        """
+        # check that the frame has the correct dimensions
+        if len(frame.shape) != 3:
+            raise ValueError('frame should have shape with only 3 dimensions')
+        # open the window if it isn't open already
+        if not self.is_open:
+            self.open()
+        # prepare the window for the next frame
+        self._window.clear()
+        self._window.switch_to()
+        self._window.dispatch_events()
+        # create an image data object
+        image = self.pyglet.image.ImageData(
+            frame.shape[1],
+            frame.shape[0],
+            'RGB',
+            frame.tobytes(),
+            pitch=frame.shape[1]*-3
+        )
+        # send the image to the window
+        image.blit(0, 0, width=self._window.width, height=self._window.height)
+        self._window.flip()
 
