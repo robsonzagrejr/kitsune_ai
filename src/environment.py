@@ -4,6 +4,7 @@ import time
 from pyglet import clock
 import pyglet
 from nes_py._image_viewer import ImageViewer
+from nes_py.wrappers import JoypadSpace
 
 from src.game_env import SuperMarioBrosEnv
 
@@ -11,98 +12,112 @@ from src.game_env import SuperMarioBrosEnv
 # the sentinel value for "No Operation"
 _NOP = 0
 
-
-def play_human(env: gym.Env, callback=None):
-    """
-    Play the environment using keyboard as a human.
-    Args:
-        env: the initialized gym environment to play
-        callback: a callback to receive output from the environment
-    Returns:
-        None
-    """
-    # ensure the observation space is a box of pixels
-    assert isinstance(env.observation_space, gym.spaces.box.Box)
-    # ensure the observation space is either B&W pixels or RGB Pixels
-    obs_s = env.observation_space
-    is_bw = len(obs_s.shape) == 2
-    is_rgb = len(obs_s.shape) == 3 and obs_s.shape[2] in [1, 3]
-    assert is_bw or is_rgb
-    # get the mapping of keyboard keys to actions in the environment
-    if hasattr(env, 'get_keys_to_action'):
-        keys_to_action = env.get_keys_to_action()
-    elif hasattr(env.unwrapped, 'get_keys_to_action'):
-        keys_to_action = env.unwrapped.get_keys_to_action()
-    else:
-        raise ValueError('env has no get_keys_to_action method')
-    # create the image viewer
-    viewer = ImageViewer(
-        env.spec.id if env.spec is not None else env.__class__.__name__,
-        env.observation_space.shape[0], # height
-        env.observation_space.shape[1], # width
-        monitor_keyboard=True,
-        relevant_keys=set(sum(map(list, keys_to_action.keys()), []))
-    )
-    # create a done flag for the environment
-    done = True
-    # prepare frame rate limiting
-    target_frame_duration = 1 / env.metadata['video.frames_per_second']
-    last_frame_time = 0
-    # start the main game loop
-    try:
-        while True:
-            current_frame_time = time.time()
-            # limit frame rate
-            if last_frame_time + target_frame_duration > current_frame_time:
-                continue
-            # save frame beginning time for next refresh
-            last_frame_time = current_frame_time
-            # clock tick
-            clock.tick()
-            # reset if the environment is done
-            if done:
-                done = False
-                state = env.reset()
-                viewer.show(env.unwrapped.screen)
-            # unwrap the action based on pressed relevant keys
-            action = keys_to_action.get(viewer.pressed_keys, _NOP)
-            next_state, reward, done, _ = env.step(action)
-            viewer.show(env.unwrapped.screen)
-            # pass the observation data through the callback
-            if callback is not None:
-                callback(state, action, reward, done, next_state)
-            state = next_state
-            # shutdown if the escape key is pressed
-            if viewer.is_escape_pressed:
-                break
-    except KeyboardInterrupt:
-        pass
-
-    viewer.close()
-    env.close()
-
-
-window = pyglet.window.Window()
 class KitsuneEnv():
 
-    def __init__(self, rom):
-        self.env = SuperMarioBrosEnv(rom)
+    def __init__(self, rom, actions, window):
+        env = SuperMarioBrosEnv(rom)
+        self.env = JoypadSpace(env, actions)
+        self.window = window
+        if hasattr(env, 'get_keys_to_action'):
+            keys_to_action = self.env.get_keys_to_action()
+        elif hasattr(env.unwrapped, 'get_keys_to_action'):
+            keys_to_action = self.env.unwrapped.get_keys_to_action()
+        else:
+            raise ValueError('env has no get_keys_to_action method')
+        
+
+        self.keys_to_action = keys_to_action
+        self.frame = None
+        self.pyglet_frame = None
+        self.KEY_MAP = {
+            pyglet.window.key.ENTER: ord('\r'),
+            pyglet.window.key.SPACE: ord(' '),
+        }
+        self.window.event(self.on_key_press)
+        self.window.event(self.on_key_release)
+        self.relevant_keys = set(sum(map(list, keys_to_action.keys()), []))
+        self._pressed_keys = []
+
+        self.start_game()
 
 
-    @staticmethod
-    def _run_game(self):
-        print("Game Loop")
-        pass
+    @property
+    def pressed_keys(self):
+        """Return a sorted list of the pressed keys."""
+        return tuple(sorted(self._pressed_keys))
+       
+
+    def _run_game(self, dt):
+        action = self.keys_to_action.get(self.pressed_keys, _NOP)
+        next_state, reward, done, _ = self.env.step(action)
+        self.set_frame(self.env.unwrapped.screen)
+        # pass the observation data through the callback
+        state = next_state
+        # shutdown if the escape key is pressed
+        #if viewer.is_escape_pressed:
+        #    self.stop()
 
 
-    def start(self):
-        clock.schedule_interval(self._run_game, .05)
-        #pyglet.app.run()
+    def start_game(self):
+        target_frame_duration = 1 / self.env.metadata['video.frames_per_second']
+        clock.schedule_interval(self._run_game, target_frame_duration)
 
+
+    def stop_game(self):
+        clock.unschedule(self._run_game)
+
+
+    def set_frame(self, frame):
+        self.frame = frame
+        self.pyglet_frame = pyglet.image.ImageData(
+            frame.shape[1],
+            frame.shape[0],
+            'RGB',
+            frame.tobytes(),
+            pitch=frame.shape[1]*-3
+        )
+
+
+    def _handle_key_event(self, symbol, is_press):
+        """
+        Handle a key event.
+        Args:
+            symbol: the symbol in the event
+            is_press: whether the event is a press or release
+        Returns:
+            None
+        """
+        # remap the key to the expected domain
+        symbol = self.KEY_MAP.get(symbol, symbol)
+        # check if the symbol is the escape key
+        if symbol == pyglet.window.key.ESCAPE:
+            self._is_escape_pressed = is_press
+            return
+        # make sure the symbol is relevant
+        if self.relevant_keys is not None and symbol not in self.relevant_keys:
+            return
+        # handle the press / release by appending / removing the key to pressed
+        if is_press:
+            self._pressed_keys.append(symbol)
+        else:
+            self._pressed_keys.remove(symbol)
+
+
+    def on_key_press(self, symbol, modifiers):
+        """Respond to a key press on the keyboard."""
+        self._handle_key_event(symbol, True)
+
+
+    def on_key_release(self, symbol, modifiers):
+        """Respond to a key release on the keyboard."""
+        self._handle_key_event(symbol, False)
+
+    """
     @window.event
     @staticmethod
     def on_key_press(symbol, modifiers):
         print('A key was pressed')
+
 
     @window.event
     @staticmethod
@@ -116,5 +131,5 @@ class KitsuneEnv():
         )
         label.draw()
 
-
+    """
 

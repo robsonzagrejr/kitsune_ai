@@ -3,7 +3,8 @@
 from src.config import (
     sprites_paths,
     threshold,
-    rom
+    rom,
+    actions
 )
 
 from kitsune import Kitsune
@@ -25,10 +26,11 @@ from kitsune import Kitsune
 def main():
     kitsune = Kitsune(
         rom = rom,
-        sprites_paths = sprites_paths
+        sprites_paths = sprites_paths,
+        env_actions = actions,
     )
 
-    kitsune.play()
+    kitsune.start()
 
 
 if __name__ == "__main__":

@@ -3,28 +3,12 @@ https://github.com/vmorarji/Object-Detection-in-Mario
 """
 import os
 import random
-
 import cv2 as cv
 import numpy as np
-import glob
-import time
 
 from src.config import (
     threshold
 )
-
-def look_to_game(show=True):
-    print((resolution["w"], resolution["h"]))
-    game_image = cv2.resize(base_image, (resolution["w"], resolution["h"]), interpolation = cv2.INTER_NEAREST)
-
-
-    objects = find_objects(game_image)
-
-
-    if show:
-        game_obj_img = show_objects(game_image, objects)
-        #game_view = np.hstack((game_image, game_obj_img))
-        cv2.imshow('kitsune_view', base_image)
 
 
 class KitsuneView():
@@ -54,6 +38,7 @@ class KitsuneView():
                 "path": sprite_path,
                 "size": (w, h)
             })
+        self.obj_frame = None
 
 
     def find_objects(self, image):
@@ -79,7 +64,7 @@ class KitsuneView():
         return objects
 
 
-    def show_objects(self, image, objects):
+    def get_image_with_objects(self, image, objects):
         img_with_objs = image.copy()
         for obj in objects:
             for pt in obj['pts']:
