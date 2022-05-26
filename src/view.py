@@ -5,6 +5,7 @@ import os
 import random
 import cv2 as cv
 import numpy as np
+import pyglet
 
 from src.config import (
     threshold
@@ -71,4 +72,15 @@ class KitsuneView():
                 cv.rectangle(img_with_objs, pt, (pt[0] +obj['w'], pt[1] + obj['h']), obj["color"], 2)
 
         return img_with_objs 
+
+
+    def get_pyglet_obj_image(self, image, objects):
+        img_with_objs = self.get_image_with_objects(image, objects)
+        return pyglet.image.ImageData(
+            img_with_objs.shape[1],
+            img_with_objs.shape[0],
+            'RGB',
+            img_with_objs.tobytes(),
+            pitch=img_with_objs.shape[1]*-3
+        )
 
