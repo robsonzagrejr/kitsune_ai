@@ -80,7 +80,13 @@ class KitsuneView():
         img_with_objs = image.copy()
         for obj in objects:
             for pt in obj['pts']:
-                cv.rectangle(img_with_objs, pt, (pt[0] +obj['w'], pt[1] + obj['h']), obj["color"], 2)
+                cv.putText(
+                    img_with_objs, obj['name'],
+                    (pt[0], pt[1]-5), cv.FONT_HERSHEY_SIMPLEX, 0.3,
+                    obj['color'],
+                    1, cv.LINE_AA
+                )
+                cv.rectangle(img_with_objs, pt, (pt[0] +obj['w'], pt[1] + obj['h']), obj["color"], 1)
 
         return img_with_objs 
 
