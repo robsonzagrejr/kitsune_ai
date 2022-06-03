@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+*/build/
 build/
 develop-eggs/
 dist/
@@ -127,3 +128,25 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+### Gradle ###
+.gradle
+build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamecache
+
+# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
+# gradle/wrapper/gradle-wrapper.properties
+
+### Gradle Patch ###
+**/build/
+
+# End of https://www.gitignore.io/api/gradle
+

@@ -1,8 +1,20 @@
 """
 https://github.com/Kautenja/nes-py/blob/master/nes_py/app/play_human.py
 https://github.com/Kautenja/nes-py/blob/master/nes_py/_image_viewer.py
+
+https://github.com/MichaelBosello/f1tenth-RL-BDI
+https://github.com/MichaelBosello/jason-RL
 """
+import json
 import pyglet
+#from flask import Flask, jsonify, request
+#from flask_restful import Resource, Api
+from multiprocessing import Process
+    
+import uvicorn
+from fastapi import FastAPI
+from flask import Flask
+
 from nes_py.wrappers import JoypadSpace
 
 from src.game_env import SuperMarioBrosEnv
@@ -11,11 +23,51 @@ from src.game_env import SuperMarioBrosEnv
 # the sentinel value for "No Operation
 _NOP = 0
 
+
+class KitsuneEnvAPI():
+
+    def __init__(self, env):
+        #self.app = FastAPI()
+        self.app = Flask(__name__)
+        self.env = env
+        self.process = Process(target=self._run)
+        self.a = 'banana'
+
+        self.app.add_url_rule(
+            '/env/<string:id>', 'route_env',
+            self.route_env, methods=["POST", "GET"]
+        )
+        self.app.add_url_rule(
+            '/env/<string:id>/<string:action>', 'route_action',
+            self.route_action, methods=["POST", "GET"]
+        )
+
+
+    def _run(self):
+        self.app.run(port='5003')
+
+
+    def start_api(self):
+        self.process.start()
+
+
+    def route_env(self, id:str):
+        # implement Env values
+        return f"HAHAHA ENV {id}"
+
+
+    def route_action(self, id:str, action:str):
+        # implement Env step action
+        return f"HAHAHA ACTION id={id} action={action} and {self.a}"
+
+
 class KitsuneEnv():
 
     def __init__(self, rom, actions, window):
-        env = SuperMarioBrosEnv(rom)
-        self._env = JoypadSpace(env, actions)
+        _env = SuperMarioBrosEnv(rom)
+        self._env = JoypadSpace(_env, actions)
+
+        self.api = KitsuneEnvAPI(self)
         self._window = window
         self._fps = self._env.metadata['video.frames_per_second']
         self.frame = None
@@ -38,6 +90,7 @@ class KitsuneEnv():
 
         # Making a scheduler to game loop
         self.start_game()
+        self.api.start_api()
 
 
     @property
