@@ -13,7 +13,10 @@ mss = "^6.1.0"
 nes-py = "^8.1.8"
 tqdm= "^4.64.0"
 gym = "^0.23.1"
-pyglet = "^1.5.26"
+pyglet = "^1.5.11"
+fastapi = "^0.78.0"
+uvicorn = "^0.17.6"
+Flask = "^2.1.2"
 
 [tool.poetry.dev-dependencies]
 
