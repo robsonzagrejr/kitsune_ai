@@ -14,14 +14,14 @@
 
 mas jacamoRL {
 
-    agent rlagent : gridworld_agent.asl {
+    agent rlagent : kitsune_agent.asl {
     	ag-bb-class: rl.beliefbase.BeliefBaseRL	
-    	focus: gridworld.cp
+    	focus: kitsuneenv.cp
     	verbose: 0
     }
     
-    workspace gridworld {
-        artifact cp: gridworld.GridWorldEnv()
+    workspace kitsuneenv {
+        artifact cp: KitsuneEnv()
     }
 
 }

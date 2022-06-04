@@ -7,13 +7,14 @@ https://github.com/MichaelBosello/jason-RL
 """
 import json
 import pyglet
-#from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request
 #from flask_restful import Resource, Api
 from multiprocessing import Process
-    
-import uvicorn
-from fastapi import FastAPI
-from flask import Flask
+from threading import Thread
+
+#import uvicorn
+#from fastapi import FastAPI
+#from flask import Flask
 
 from nes_py.wrappers import JoypadSpace
 
@@ -30,7 +31,8 @@ class KitsuneEnvAPI():
         #self.app = FastAPI()
         self.app = Flask(__name__)
         self.env = env
-        self.process = Process(target=self._run)
+        #self.process = Process(target=self._run)
+        self.process = Thread(target=self.app.run, kwargs={'port':'5003'})
         self.a = 'banana'
 
         self.app.add_url_rule(
@@ -58,7 +60,17 @@ class KitsuneEnvAPI():
 
     def route_action(self, id:str, action:str):
         # implement Env step action
-        return f"HAHAHA ACTION id={id} action={action} and {self.a}"
+        print(f'Old {self.env.action}')
+        self.env.action = int(action)
+        print(f"Id: {id}")
+        print(f"New action {self.env.action}")
+        result = {
+            'state':[0],
+            'reward': 0,
+            'terminal': False,
+        }
+        print('starting state', result)
+        return jsonify(result)
 
 
 class KitsuneEnv():
