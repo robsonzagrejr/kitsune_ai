@@ -45,7 +45,7 @@ class Kitsune():
         frame = self.env.frame
         objects = self.view.find_objects(frame)
         self.view.frame_obj = self.view.get_image_with_objects(frame, objects)
-        self.env.action = 1
+        #self.env.action = 1
         #print(f"TEMPO: {time.time() - start_time}")
 
 
