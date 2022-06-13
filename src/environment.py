@@ -18,7 +18,7 @@ from threading import Thread
 
 from nes_py.wrappers import JoypadSpace
 
-from src.game_env import SuperMarioBrosEnv
+from src.games.super_mario_bros_env import SuperMarioBrosEnv
 
 
 # the sentinel value for "No Operation
