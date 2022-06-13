@@ -2,8 +2,9 @@ import pyglet
 import time
 import cv2 as cv
 
-from src.view import KitsuneView
-from src.environment import KitsuneEnv 
+from src.kitsune_env import KitsuneEnv 
+from src.kitsune_view import KitsuneView
+from src.kitsune_agent import KitsuneAgent
 
 from src.config import (
     screen,
@@ -20,8 +21,9 @@ class Kitsune():
     def __init__(self, rom, sprites_paths, env_actions):
         self._window = pyglet.window.Window(width=screen['w'],height=screen['h'])
 
-        self.env = KitsuneEnv(rom, env_actions, self._window)
-        self.view = KitsuneView(sprites_paths)
+        self.env   = KitsuneEnv(rom, env_actions, self._window)
+        self.view  = KitsuneView(sprites_paths)
+        self.agent = KitsuneAgent(self.env)
 
         self.images = {
             "normal": get_pyglet_image(
@@ -33,6 +35,7 @@ class Kitsune():
         }
 
         self._window.event(self.on_draw)
+        self.agent.start_api()
         self.play()
 
 
@@ -45,7 +48,6 @@ class Kitsune():
         frame = self.env.frame
         objects = self.view.find_objects(frame)
         self.view.frame_obj = self.view.get_image_with_objects(frame, objects)
-        #self.env.action = 1
         #print(f"TEMPO: {time.time() - start_time}")
 
 
@@ -103,6 +105,4 @@ class Kitsune():
             self._window.width//4,self._window.height//2,
             width=self._window.width//2, height=self._window.height//2
         )
-
-
 
