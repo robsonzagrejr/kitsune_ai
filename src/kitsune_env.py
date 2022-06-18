@@ -15,17 +15,17 @@ _NOP = 0
 
 class KitsuneEnv():
 
-    def __init__(self, rom, actions, window):
+    def __init__(self, rom, actions, window, is_training):
         _env = SuperMarioBrosEnv(rom)
         self._env = JoypadSpace(_env, actions)
 
         self._window = window
         self._fps = self._env.metadata['video.frames_per_second']
         self.frame = None
-        self.key_mode = True
+        self.key_mode = is_training
         self.action = 0
-        self.is_training = False
-        self._info = {}
+        self.is_training = is_training
+        self.info = {}
 
         # Map between pyglet and nes-py
         self.KEY_MAP = {
@@ -42,7 +42,8 @@ class KitsuneEnv():
         self._window.event(self.on_key_release)
 
         # Making a scheduler to game loop
-        self.start_game()
+        if not self.is_training:
+            self.start_game()
 
 
     @property
@@ -90,7 +91,6 @@ class KitsuneEnv():
         self._handle_key_event(symbol, False)
 
 
-
     @property
     def _action(self):
         if self.key_mode:
@@ -99,18 +99,14 @@ class KitsuneEnv():
             return self.action
 
 
-    def get_info(self):
-        return self._info
-
-
     def step(self, action):
         state, reward, done, _ = self._env.step(action)
-        self._info = {
+        self.info = {
             'state': state,
             'reward': reward,
             'done': done,
         }
-        self.frame = self._env.unwrapped.screen
+        self.frame = state
         return state, reward, done
 
 

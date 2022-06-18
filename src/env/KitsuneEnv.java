@@ -11,35 +11,58 @@ import rest.StateRest;
 //import jason.asSyntax.Atom;
 
 public class KitsuneEnv extends Artifact{
-	
-	RestClient<List<Double>> kitsune_env= new RestClient<>();
-	
+    
+    RestClient<List<Double>> kitsune_env= new RestClient<>();
+    
 
-	@OPERATION
-	public void init() {
-		Map<String, String> parameters = new HashMap<>();
-        //StateRest<List<Double>> state = kitsune_env.initialize("KitsuneEnv", parameters);
-	}
+    @OPERATION
+    public void init() {
+        Map<String, String> parameters = new HashMap<>();
+        StateRest<List<Double>> info = kitsune_env.initialize("KitsuneEnv", parameters);
+        updatePercepts(info);
+    }
 
-	@OPERATION
-	public void move(String move) {
-        StateRest<List<Double>> state;
+    @OPERATION
+    public void move(String move) {
+        StateRest<List<Double>> info;
         switch(move) {
-            case "NOOP":
-                state = kitsune_env.step(0);
+            case "noop":
+                info = kitsune_env.step(0);
                 break;
             case "right":
-                state = kitsune_env.step(1);
+                info = kitsune_env.step(1);
                 break;
-            case "jump": //A
-                state = kitsune_env.step(11);
+            case "left":
+                info = kitsune_env.step(5);
+                break;
+            case "down":
+                info = kitsune_env.step(9);
+                break;
+            case "a": //A
+                info = kitsune_env.step(11);
                 break;
             default:
-                kitsune_env.step(0);
+                info =  kitsune_env.step(0);
                 break;
 
         }
-		//updatePercepts(state);
-	}
-	
+        updatePercepts(info);
+    }
+
+
+    public void updatePercepts(StateRest<List<Double>> info) {
+        Double[] player_pos = info.getState().get(0).toArray(new Double[0]);
+        defineObsProperty("player_pos", (Object[]) player_pos);
+        defineObsProperty("reward", info.getReward());
+
+        // Defining if is a terminal state
+        if (info.isTerminal()) {
+            if (!hasObsProperty("gameover"))
+                defineObsProperty("gameover");
+        } else {
+            try {
+                removeObsProperty("gameover");
+            } catch (IllegalArgumentException e) {}
+        }
+    }
 }
