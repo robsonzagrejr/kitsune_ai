@@ -18,12 +18,13 @@ from src.utils import (
 
 class Kitsune():
 
-    def __init__(self, rom, sprites_paths, env_actions):
+    def __init__(self, rom, sprites_paths, env_actions, is_training):
         self._window = pyglet.window.Window(width=screen['w'],height=screen['h'])
+        self._is_training = is_training
 
-        self.env   = KitsuneEnv(rom, env_actions, self._window)
+        self.env   = KitsuneEnv(rom, env_actions, self._window, self._is_training)
         self.view  = KitsuneView(sprites_paths)
-        self.agent = KitsuneAgent(self.env)
+        self.agent = KitsuneAgent(self.env, self.view)
 
         self.images = {
             "normal": get_pyglet_image(
@@ -35,7 +36,7 @@ class Kitsune():
         }
 
         self._window.event(self.on_draw)
-        self.agent.start_api()
+
         self.play()
 
 
@@ -44,9 +45,10 @@ class Kitsune():
  
 
     def _play_game(self, dt):
+        return
         start_time = time.time()
-        frame = self.env.frame
-        objects = self.view.find_objects(frame)
+        self.agent.update_status()
+        frame, objects = self.agent.status
         self.view.frame_obj = self.view.get_image_with_objects(frame, objects)
         #print(f"TEMPO: {time.time() - start_time}")
 
@@ -68,7 +70,7 @@ class Kitsune():
         self._window.clear()
 
         # Game Image
-        if self.env.frame is not None:
+        if self.agent._frame is not None:
             get_pyglet_image(self.env.frame).blit(
                 x=0, y=0,
                 width=self._window.width//2, height=self._window.height//2

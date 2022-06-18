@@ -16,21 +16,21 @@ threshold = 0.75
 resolution = {"w":256, "h":240}
 
 actions = [
-    ['NOOP'],
-    ['right'],
-    ['right', 'A'],
-    ['right', 'B'],
-    ['right', 'A', 'B'],
-    ['left'],
-    ['left', 'A'],
-    ['left', 'B'],
-    ['left', 'A', 'B'],
-    ['down'],
-    ['up'],
-    ['A'],
-    ['B'],
-    ['start'],
-    ['select'],
+    ['NOOP'],            #0
+    ['right'],           #1
+    ['right', 'A'],      #2
+    ['right', 'B'],      #3
+    ['right', 'A', 'B'], #4
+    ['left'],            #5
+    ['left', 'A'],       #6
+    ['left', 'B'],       #7
+    ['left', 'A', 'B'],  #8
+    ['down'],            #9
+    ['up'],              #10
+    ['A'],               #11
+    ['B'],               #12
+    ['start'],           #13
+    ['select'],          #14
 ]
 
 screen = {
