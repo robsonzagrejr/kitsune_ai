@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,20 +13,21 @@ import rest.StateRest;
 
 public class KitsuneEnv extends Artifact{
     
-    RestClient<List<Double>> kitsune_env= new RestClient<>();
+    private RestClient<List<String>> kitsune_env= new RestClient<>();
+    private ArrayList<ObsProperty> lastStepPropeties = new ArrayList<ObsProperty>();
     
 
     @OPERATION
     public void init() {
         Map<String, String> parameters = new HashMap<>();
-        StateRest<List<Double>> info = kitsune_env.initialize("KitsuneEnv", parameters);
+        StateRest<List<String>> info = kitsune_env.initialize("KitsuneEnv", parameters);
         updatePercepts(info);
         defineObsProperty("ready");
     }
 
     @OPERATION
     public void move(String move) {
-        StateRest<List<Double>> info;
+        StateRest<List<String>> info;
         switch(move) {
             case "noop":
                 info = kitsune_env.step(0);
@@ -51,10 +53,24 @@ public class KitsuneEnv extends Artifact{
     }
 
 
-    public void updatePercepts(StateRest<List<Double>> info) {
-        Double[] player_pos = info.getState().get(0).toArray(new Double[0]);
-        defineObsProperty("player_pos", (Object[]) player_pos);
-        defineObsProperty("reward", info.getReward());
+    public void updatePercepts(StateRest<List<String>> info) {
+        //Cleanning the old perceptions
+        this.clearPercepts();
+
+        //Defining the perceptions
+        for (List<String> obj:info.getState()) {
+            Object[] parameters = new Object[obj.size() - 1];
+            for (int i=1; i<obj.size() ; i++) {
+                parameters[i-1] = obj.get(i);
+            }
+            this.lastStepPropeties.add(
+                defineObsProperty(
+                    obj.get(0),
+                    parameters
+                )
+            );
+        }
+        this.lastStepPropeties.add(defineObsProperty("reward", info.getReward()));
 
         // Defining if is a terminal state
         if (info.isTerminal()) {
@@ -65,5 +81,11 @@ public class KitsuneEnv extends Artifact{
                 removeObsProperty("gameover");
             } catch (IllegalArgumentException e) {}
         }
+    }
+
+    private void clearPercepts () {
+        for (ObsProperty obs:this.lastStepPropeties)
+            removeObsProperty(obs.getName());
+        this.lastStepPropeties.clear();
     }
 }
