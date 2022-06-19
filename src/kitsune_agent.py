@@ -5,6 +5,7 @@ https://github.com/MichaelBosello/jason-RL
 from flask import Flask, jsonify, request
 import logging
 from threading import Thread
+import time
 
 
 class KitsuneAgent():
@@ -41,19 +42,25 @@ class KitsuneAgent():
 
     @property
     def result(self):
+        start = time.time()
         self._frame = self.env.frame
         objects = []
         if self._frame is not None:
+            ob_start = time.time()
             objects = self.view.find_objects(self._frame)
+            print(f"OB_Time = {time.time() - ob_start}")
+            vew_start = time.time()
             self.view.frame_obj = self.view.get_image_with_objects(self._frame, objects)
+            print(f"VIEW_Time = {time.time() - vew_start}")
 
         state = [
-            [obj['type'], pt[0], pt[1], obj['w'], obj['h']]
+            [obj['type'], pt[0], pt[1], pt[2], pt[3]] #x, y, w ,h
             for obj in objects
             for pt in obj.get('pts',[])
         ]
         reward = self.env.info.get('reward', 0)
         done = self.env.info.get('done', 0)
+        print(f"Time = {time.time() - start}")
 
         return {
             'state': state,

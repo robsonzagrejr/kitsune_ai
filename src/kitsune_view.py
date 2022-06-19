@@ -62,15 +62,50 @@ class KitsuneView():
             result = cv.matchTemplate(np.array(img_gray), np.array(sprite_template), cv.TM_CCOEFF_NORMED)
             locales = np.where( result >= threshold)
 
-            sprint_pts = [ pt for pt in zip(*locales[::-1])]
+            # Merging vertically sprites that is side by side
+            locales_simple= {}
+            aux = 0
+            w = sprite["size"][0]
+            h = sprite["size"][1]
+            for pt in zip(*locales[::-1]):
+                if pt[0] in locales_simple.keys():
+                    pos = locales_simple[pt[0]]
+
+                    #one is inside of other
+                    if (pos[1]+h > pt[1] or pos[1] < (pt[1]+h)):
+                        new_p = pos[1]
+                        if pt[1] < pos[1]:
+                            new_p = pt[1]
+                        new_h = h + abs(pos[1] - pt[1])
+                        locales_simple[pt[0]] = [
+                            pos[0], int(new_p),
+                            pos[2], int(new_h)
+                        ]
+                    #they arent side by side
+                    else:
+                        a = aux.get(pt[0], 0)
+                        aux[pt[0]] = a+1
+                        locales_simple[f'{pt[0]}_+{a}'] =  [
+                            int(pt[0]), int(pt[1]),
+                            int(w), int(h)
+                        ]
+                else:
+                    locales_simple[pt[0]] = [
+                        int(pt[0]), int(pt[1]),
+                        int(w), int(h)
+                    ]
+
+            sprint_pts = list(locales_simple.values())
+
+
             if sprint_pts:
                 objects.append(
                     {
                         "name": sprite["name"],
                         "type": sprite["type"],
-                        "pts": [[int(x[0]), int(x[1])] for x in sprint_pts],
-                        "w": sprite["size"][0],
-                        "h": sprite["size"][1],
+                        "pts": sprint_pts,
+                        "w": w,
+                        "h": h,
                         "color": sprite["color"],
                     }
                 )
@@ -88,7 +123,7 @@ class KitsuneView():
                     obj['color'],
                     1, cv.LINE_AA
                 )
-                cv.rectangle(img_with_objs, pt, (pt[0] +obj['w'], pt[1] + obj['h']), obj["color"], 1)
+                cv.rectangle(img_with_objs, pt[:2], (pt[0] + pt[2], pt[1] + pt[3]), obj["color"], 1)
 
         return img_with_objs 
 

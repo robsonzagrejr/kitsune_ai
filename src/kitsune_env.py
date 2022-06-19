@@ -107,7 +107,7 @@ class KitsuneEnv():
         state, reward, done, _ = self._env.step(action)
         self.n_step += 1;
         self.reward += reward
-        if self.n_step == self.max_step:
+        if self.is_training and self.n_step == self.max_step:
             done = True
             reward = self.reward - 15
 
