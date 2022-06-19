@@ -6,6 +6,8 @@ import random
 import cv2 as cv
 import numpy as np
 import pyglet
+import multiprocessing
+from functools import partial
 
 from src.config import (
     threshold
@@ -52,65 +54,75 @@ class KitsuneView():
                 "size": (w, h)
             })
         self.frame_obj = None
+        self.pool = multiprocessing.Pool(4)
 
 
     def find_objects(self, image):
         img_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-        objects = []
-        for sprite in self.sprites:
-            sprite_template = sprite["img"]
-            result = cv.matchTemplate(np.array(img_gray), np.array(sprite_template), cv.TM_CCOEFF_NORMED)
-            locales = np.where( result >= threshold)
+        # Using parallelism to speedup the search
+        objects = self.pool.map(
+            partial(KitsuneView.find_sprite,img_gray=img_gray),
+            self.sprites
+        )
+        # Removing None results
+        objects = [obj for obj in objects if obj]
 
-            # Merging vertically sprites that is side by side
-            locales_simple= {}
-            aux = 0
-            w = sprite["size"][0]
-            h = sprite["size"][1]
-            for pt in zip(*locales[::-1]):
-                if pt[0] in locales_simple.keys():
-                    pos = locales_simple[pt[0]]
+        return objects
 
-                    #one is inside of other
-                    if (pos[1]+h > pt[1] or pos[1] < (pt[1]+h)):
-                        new_p = pos[1]
-                        if pt[1] < pos[1]:
-                            new_p = pt[1]
-                        new_h = h + abs(pos[1] - pt[1])
-                        locales_simple[pt[0]] = [
-                            pos[0], int(new_p),
-                            pos[2], int(new_h)
-                        ]
-                    #they arent side by side
-                    else:
-                        a = aux.get(pt[0], 0)
-                        aux[pt[0]] = a+1
-                        locales_simple[f'{pt[0]}_+{a}'] =  [
-                            int(pt[0]), int(pt[1]),
-                            int(w), int(h)
-                        ]
-                else:
+
+    @staticmethod
+    def find_sprite(sprite, img_gray):
+        sprite_template = sprite["img"]
+        result = cv.matchTemplate(np.array(img_gray), np.array(sprite_template), cv.TM_CCOEFF_NORMED)
+        locales = np.where( result >= threshold)
+
+        # Merging vertically sprites that is side by side
+        locales_simple= {}
+        aux = 0
+        w = sprite["size"][0]
+        h = sprite["size"][1]
+        for pt in zip(*locales[::-1]):
+            if pt[0] in locales_simple.keys():
+                pos = locales_simple[pt[0]]
+
+                #one is inside of other
+                if (pos[1]+h > pt[1] or pos[1] < (pt[1]+h)):
+                    new_p = pos[1]
+                    if pt[1] < pos[1]:
+                        new_p = pt[1]
+                    new_h = h + abs(pos[1] - pt[1])
                     locales_simple[pt[0]] = [
+                        pos[0], int(new_p),
+                        pos[2], int(new_h)
+                    ]
+                #they arent side by side
+                else:
+                    a = aux.get(pt[0], 0)
+                    aux[pt[0]] = a+1
+                    locales_simple[f'{pt[0]}_+{a}'] =  [
                         int(pt[0]), int(pt[1]),
                         int(w), int(h)
                     ]
+            else:
+                locales_simple[pt[0]] = [
+                    int(pt[0]), int(pt[1]),
+                    int(w), int(h)
+                ]
 
-            sprint_pts = list(locales_simple.values())
+        sprint_pts = list(locales_simple.values())
 
-
-            if sprint_pts:
-                objects.append(
-                    {
-                        "name": sprite["name"],
-                        "type": sprite["type"],
-                        "pts": sprint_pts,
-                        "w": w,
-                        "h": h,
-                        "color": sprite["color"],
-                    }
-                )
-
-        return objects
+        if sprint_pts:
+            #objects.append(
+            return (
+                {
+                    "name": sprite["name"],
+                    "type": sprite["type"],
+                    "pts": sprint_pts,
+                    "w": w,
+                    "h": h,
+                    "color": sprite["color"],
+                }
+            )
 
 
     def get_image_with_objects(self, image, objects):
