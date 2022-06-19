@@ -11,6 +11,7 @@ class KitsuneAgent():
 
     def __init__(self, env, view):
         self.app = Flask(__name__)
+        # Removing 200 logging
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
 
@@ -38,21 +39,26 @@ class KitsuneAgent():
         return self._frame, self._objects
 
 
-    def update_status(self):
+    @property
+    def result(self):
         self._frame = self.env.frame
-        objects = []
+        objects = {}
         if self._frame is not None:
             objects = self.view.find_objects(self._frame)
-            self.view.frame_obj = self.view.get_image_with_objects(self._frame,
-                objects)
-        player = [0.0]
-        for obj in objects:
-            if obj['type'] == 'mario':
-                player = [ float(x) for x in obj['pts'][0]]
-                break
+            self.view.frame_obj = self.view.get_image_with_objects(self._frame, objects)
+        obj = objects.get('player', {})
+        player = obj.get('pts', [0.0])
 
-        self._mario_pos = player
-        return [self._mario_pos]
+        state  = [player]
+        reward = self.env.info.get('reward', 0)
+        done = self.env.info.get('done', 0)
+    
+
+        return {
+            'state': state,
+            'reward': float(reward),
+            'terminal': bool(done),
+        }
 
 
     def _run(self):
@@ -64,40 +70,18 @@ class KitsuneAgent():
 
 
     def route_env(self, env:str):
-        _ = self.env.info.get('state', [[]])
-        reward = self.env.info.get('reward', 0)
-        done = self.env.info.get('done', 0)
-
-        state = self.update_status()
-
-        result = {
-            'state': state,
-            'reward': float(reward),
-            'terminal': bool(done),
-        }
-        print(result)
-        return jsonify(result)
+        # Implement Env step info
+        return jsonify(self.result)
 
 
     def route_action(self, env:str, action:str):
-        # implement Env step action
+        # Implement Env step action
 
         #FIXME what will be the state?
         if self.env.is_training:
             _ , reward, done = self.env.step(int(action))
-
         else:
             self.env.action = int(action)
-            #state, reward, done = self.env.get_info()
-            _ , reward, done = [0], 0 , False
 
-        state = self.update_status()
-
-        result = {
-            'state': state,
-            'reward': float(reward),
-            'terminal': bool(done),
-        }
-        print('starting state', result)
-        return jsonify(result)
+        return jsonify(self.result)
 

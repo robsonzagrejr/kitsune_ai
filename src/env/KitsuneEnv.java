@@ -20,6 +20,7 @@ public class KitsuneEnv extends Artifact{
         Map<String, String> parameters = new HashMap<>();
         StateRest<List<Double>> info = kitsune_env.initialize("KitsuneEnv", parameters);
         updatePercepts(info);
+        defineObsProperty("ready");
     }
 
     @OPERATION
