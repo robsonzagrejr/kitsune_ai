@@ -47,12 +47,6 @@ class KitsuneAgent():
             objects = self.view.find_objects(self._frame)
             self.view.frame_obj = self.view.get_image_with_objects(self._frame, objects)
 
-        """
-        obj = objects.get('player', {})
-        player = obj.get('pts', [0.0])
-
-        state  = [player]
-        """
         state = [
             [obj['type'], pt[0], pt[1], obj['w'], obj['h']]
             for obj in objects
