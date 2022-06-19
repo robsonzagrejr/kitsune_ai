@@ -17,7 +17,7 @@ public class BehaviourSerializer {
 	private ObjectOutputStream outObject;
 	private FileOutputStream outFile;
 	private int episodeForSaving = 1;
-	private int writeEveryNEpisode = 100;
+	private int writeEveryNEpisode = 1;
 	
 	private boolean saveProgress = true;
 	private boolean loadProgress = true;

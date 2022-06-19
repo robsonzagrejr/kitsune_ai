@@ -21,8 +21,12 @@ class KitsuneEnv():
 
         self._window = window
         self._fps = self._env.metadata['video.frames_per_second']
+        self.n_step = 0
+        self.episode = 0
+        self.reward = 0
+        self.max_step = 60*30
         self.frame = None
-        self.key_mode = is_training
+        self.key_mode = not is_training
         self.action = 0
         self.is_training = is_training
         self.info = {}
@@ -100,18 +104,27 @@ class KitsuneEnv():
 
 
     def step(self, action):
-
         state, reward, done, _ = self._env.step(action)
+        self.n_step += 1;
+        self.reward += reward
+        if self.n_step == self.max_step:
+            done = True
+            reward = self.reward - 15
+
         if done:
             _ = self._env.reset()
+            self.n_step = 0
+            self.episode += 1
+            self.reward = 0
+
 
         self.info = {
             'state': state,
-            'reward': reward,
+            'reward': self.reward,
             'done': done,
         }
         self.frame = state
-        return state, reward, done
+        return state, self.reward, done
 
 
     def _run_game(self, dt):

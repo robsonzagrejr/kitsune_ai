@@ -35,14 +35,35 @@ public class KitsuneEnv extends Artifact{
             case "right":
                 info = kitsune_env.step(1);
                 break;
+            case "right_a":
+                info = kitsune_env.step(2);
+                break;
+             case "right_b":
+                info = kitsune_env.step(3);
+                break;
+             case "right_a_b":
+                info = kitsune_env.step(4);
+                break;
             case "left":
                 info = kitsune_env.step(5);
+                break;
+            case "left_a":
+                info = kitsune_env.step(6);
+                break;
+             case "left_b":
+                info = kitsune_env.step(7);
+                break;
+             case "left_a_b":
+                info = kitsune_env.step(8);
                 break;
             case "down":
                 info = kitsune_env.step(9);
                 break;
-            case "a": //A
+            case "a":
                 info = kitsune_env.step(11);
+                break;
+            case "b":
+                info = kitsune_env.step(12);
                 break;
             default:
                 info =  kitsune_env.step(0);

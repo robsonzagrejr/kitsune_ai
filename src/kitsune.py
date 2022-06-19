@@ -112,7 +112,26 @@ class Kitsune():
         )
         reward_label.draw()
 
-        
+        # Step 
+        step= self.env.n_step
+        step_label = pyglet.text.Label(f'Step: {step}',
+            font_name='Times New Roman',
+            font_size=12,
+            x=10, y=self._window._height-80,
+            anchor_x='left', anchor_y='top'
+        )
+        step_label.draw()
+
+        # Episode 
+        episode= self.env.episode
+        episode_label= pyglet.text.Label(f'Episode: {episode}',
+            font_name='Times New Roman',
+            font_size=12,
+            x=10, y=self._window._height-100,
+            anchor_x='left', anchor_y='top'
+        )
+        episode_label.draw()
+
         # Kitsune
         self.get_kitsune_image().blit(
             self._window.width//4,self._window.height//2,
