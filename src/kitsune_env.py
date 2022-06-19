@@ -100,7 +100,11 @@ class KitsuneEnv():
 
 
     def step(self, action):
+
         state, reward, done, _ = self._env.step(action)
+        if done:
+            _ = self._env.reset()
+
         self.info = {
             'state': state,
             'reward': reward,

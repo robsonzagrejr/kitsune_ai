@@ -54,7 +54,7 @@ class KitsuneView():
 
     def find_objects(self, image):
         img_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-        objects = []
+        objects = {}
         for sprite in self.sprites:
             sprite_template = sprite["img"]
             result = cv.matchTemplate(np.array(img_gray), np.array(sprite_template), cv.TM_CCOEFF_NORMED)
@@ -62,11 +62,13 @@ class KitsuneView():
 
             sprint_pts = [ pt for pt in zip(*locales[::-1])]
             if sprint_pts:
-                objects.append(
+                if not objects.get(type):
+                    objects[type] = []
+                objects[type].append(
                     {
                         "name": sprite["name"],
                         "type": sprite["type"],
-                        "pts": sprint_pts,
+                        "pts": [[int(x[0]), int(x[1])] for x in sprint_pts],
                         "w": sprite["size"][0],
                         "h": sprite["size"][1],
                         "color": sprite["color"],
@@ -78,15 +80,16 @@ class KitsuneView():
 
     def get_image_with_objects(self, image, objects):
         img_with_objs = image.copy()
-        for obj in objects:
-            for pt in obj['pts']:
-                cv.putText(
-                    img_with_objs, obj['name'],
-                    (pt[0], pt[1]-5), cv.FONT_HERSHEY_SIMPLEX, 0.3,
-                    obj['color'],
-                    1, cv.LINE_AA
-                )
-                cv.rectangle(img_with_objs, pt, (pt[0] +obj['w'], pt[1] + obj['h']), obj["color"], 1)
+        for objs_types in objects.values():
+            for obj in objs_types:
+                for pt in obj['pts']:
+                    cv.putText(
+                        img_with_objs, obj['name'],
+                        (pt[0], pt[1]-5), cv.FONT_HERSHEY_SIMPLEX, 0.3,
+                        obj['color'],
+                        1, cv.LINE_AA
+                    )
+                    cv.rectangle(img_with_objs, pt, (pt[0] +obj['w'], pt[1] + obj['h']), obj["color"], 1)
 
         return img_with_objs 
 

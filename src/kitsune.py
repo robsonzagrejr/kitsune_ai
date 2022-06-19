@@ -55,7 +55,7 @@ class Kitsune():
 
 
     def play(self):
-        pyglet.clock.schedule_interval(self._play_game, 0.1)
+        pyglet.clock.schedule_interval(self._play_game, 0.01)
 
 
     def stop_play(self):
@@ -87,7 +87,7 @@ class Kitsune():
         fps_label = pyglet.text.Label(f'FPS: {pyglet.clock.get_fps()}',
             font_name='Times New Roman',
             font_size=12,
-            x=0, y=self._window._height-20,
+            x=10, y=self._window._height-20,
             anchor_x='left', anchor_y='top'
         )
         fps_label.draw()
@@ -97,10 +97,21 @@ class Kitsune():
         mode_label = pyglet.text.Label(f'Mode: {mode}',
             font_name='Times New Roman',
             font_size=12,
-            x=self._window.width, y=self._window._height-20,
+            x=self._window.width-10, y=self._window._height-20,
             anchor_x='right', anchor_y='top'
         )
         mode_label.draw()
+
+        # Reward
+        reward = self.env.info.get('reward', 0)
+        reward_label = pyglet.text.Label(f'Reward: {reward}',
+            font_name='Times New Roman',
+            font_size=12,
+            x=10, y=self._window._height-60,
+            anchor_x='left', anchor_y='top'
+        )
+        reward_label.draw()
+
         
         # Kitsune
         self.get_kitsune_image().blit(

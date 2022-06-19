@@ -15,11 +15,12 @@ rl_terminal(game_env) :- gameover.
 
 !start.
 
-+!start : true <- rl.execute(game_env); !start. //!start in order to continue after the end of the episode
++!start : ready <- rl.execute(game_env); !start. //!start in order to continue after the end of the episode
 
 @action[rl_goal(game_env), rl_param(direction(set(
-    noop, right, left, down, a)))
-]
+    right
+)))]
+    //noop, right, left, down, a)))
 +!move(Direction) <- move(Direction).
 
 { include("$jacamoJar/templates/common-cartago.asl") }
