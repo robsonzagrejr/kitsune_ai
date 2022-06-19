@@ -12,7 +12,7 @@ def main():
         rom = rom,
         sprites_paths = sprites_paths,
         env_actions = actions,
-        is_training = True,
+        is_training = False,
     )
 
     kitsune.start()
