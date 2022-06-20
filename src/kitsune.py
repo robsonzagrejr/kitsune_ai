@@ -131,6 +131,17 @@ class Kitsune():
             anchor_x='left', anchor_y='top'
         )
         episode_label.draw()
+        
+        # Score
+        score = self.env.score
+        score_label= pyglet.text.Label(f'Score: {score}',
+            font_name='Times New Roman',
+            font_size=12,
+            x=10, y=self._window._height-120,
+            anchor_x='left', anchor_y='top'
+        )
+        score_label.draw()
+
 
         # Kitsune
         self.get_kitsune_image().blit(

@@ -120,6 +120,9 @@ class SuperMarioBrosEnv(NESEnv):
         # score is represented as a figure with 6 10's places
         return self._read_mem_range(0x07de, 6)
 
+    def get_score(self):
+        return self._read_mem_range(0x07de, 6)
+
     @property
     def _time(self):
         """Return the time left (0 to 999)."""

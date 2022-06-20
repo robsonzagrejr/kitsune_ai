@@ -78,7 +78,7 @@ class KitsuneView():
 
         # Merging vertically sprites that is side by side
         locales_simple= {}
-        aux = 0
+        aux = {}
         w = sprite["size"][0]
         h = sprite["size"][1]
         for pt in zip(*locales[::-1]):
@@ -86,7 +86,8 @@ class KitsuneView():
                 pos = locales_simple[pt[0]]
 
                 #one is inside of other
-                if (pos[1]+h > pt[1] or pos[1] < (pt[1]+h)):
+                if ((pos[1] <= pt[1] <= (pos[1] + pos[3]))
+                    or (pt[1] <= pos[1] <= (pt[1] + h))):
                     new_p = pos[1]
                     if pt[1] < pos[1]:
                         new_p = pt[1]

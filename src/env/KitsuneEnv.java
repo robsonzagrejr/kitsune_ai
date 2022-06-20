@@ -91,7 +91,8 @@ public class KitsuneEnv extends Artifact{
                 )
             );
         }
-        this.lastStepPropeties.add(defineObsProperty("reward", info.getReward()));
+        this.lastStepPropeties.add(defineObsProperty("reward", info.getReward().get(0)));
+        this.lastStepPropeties.add(defineObsProperty("score", info.getReward().get(1)));
 
         // Defining if is a terminal state
         if (info.isTerminal()) {

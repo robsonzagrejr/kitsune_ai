@@ -21,9 +21,10 @@ class KitsuneEnv():
 
         self._window = window
         self._fps = self._env.metadata['video.frames_per_second']
-        self.n_step = 0
-        self.episode = 0
         self.reward = 0
+        self.score = 0
+        self.episode = 0
+        self.n_step = 0
         self.max_step = 60*30
         self.frame = None
         self.key_mode = not is_training
@@ -107,20 +108,23 @@ class KitsuneEnv():
         state, reward, done, _ = self._env.step(action)
         self.n_step += 1;
         self.reward += reward
+        self.score = self._env.get_score()
+
+        # Reseting when traning and get too much steps
         if self.is_training and self.n_step == self.max_step:
             done = True
             reward = self.reward - 15
 
+        # Reseting values and env
         if done:
             _ = self._env.reset()
             self.n_step = 0
             self.episode += 1
             self.reward = 0
 
-
         self.info = {
             'state': state,
-            'reward': self.reward,
+            'reward': [float(self.reward), float(self.score)],
             'done': done,
         }
         self.frame = state
