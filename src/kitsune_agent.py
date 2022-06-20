@@ -50,11 +50,11 @@ class KitsuneAgent():
 
         state = [
             #type, x, y, w ,h
-            [obj['type'], pt[0], pt[1], pt[2], pt[3]]
+            [obj['type'], obj['name'], pt[0], pt[1], pt[2], pt[3]]
             for obj in objects
             for pt in obj.get('pts',[])
         ]
-        reward = self.env.info.get('reward', 0)
+        reward = self.env.info.get('reward', [0, 0])
         done = self.env.info.get('done', 0)
 
         return {
@@ -80,7 +80,6 @@ class KitsuneAgent():
     def route_action(self, env:str, action:str):
         # Implement Env step action
 
-        #FIXME what will be the state?
         if self.env.is_training:
             _ , reward, done = self.env.step(int(action))
         else:
