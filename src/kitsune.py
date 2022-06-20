@@ -103,7 +103,7 @@ class Kitsune():
         mode_label.draw()
 
         # Reward
-        reward = self.env.info.get('reward', 0)
+        reward = self.env.info.get('reward', [0])[0]
         reward_label = pyglet.text.Label(f'Reward: {reward}',
             font_name='Times New Roman',
             font_size=12,

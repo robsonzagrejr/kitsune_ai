@@ -14,7 +14,7 @@
 
 mas jacamoRL {
 
-    agent rlagent : kitsune_agent.asl {
+    agent rlagent : kitsune_agent_mario.asl {
     	ag-bb-class: rl.beliefbase.BeliefBaseRL	
     	focus: kitsuneenv.cp
     	verbose: 0

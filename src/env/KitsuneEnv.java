@@ -84,9 +84,14 @@ public class KitsuneEnv extends Artifact{
             for (int i=1; i<obj.size() ; i++) {
                 parameters[i-1] = obj.get(i);
             }
+            String propertie_type = "object";
+            if (obj.get(0).equals("player")) {
+                propertie_type = "player";
+            }
+
             this.lastStepPropeties.add(
                 defineObsProperty(
-                    obj.get(0),
+                    propertie_type,
                     parameters
                 )
             );
