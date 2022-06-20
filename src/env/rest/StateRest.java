@@ -4,7 +4,7 @@ import java.util.List;
 
 public class StateRest<T> {
     private List<T> state;
-    private double reward;
+    private List<Double> reward;
     private boolean terminal;
 
     public List<T> getState() {
@@ -15,11 +15,11 @@ public class StateRest<T> {
         this.state = state;
     }
 
-    public double getReward() {
+    public List<Double> getReward() {
         return reward;
     }
 
-    public void setReward(double reward) {
+    public void setReward(List<Double> reward) {
         this.reward = reward;
     }
 
