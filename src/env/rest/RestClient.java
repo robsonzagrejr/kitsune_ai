@@ -1,6 +1,7 @@
 package rest;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.MediaType;
@@ -21,11 +22,26 @@ public class RestClient<T> {
 		env.setName(envName);
 		env.setParameters(parameters);
 		
-		Response response = client.target(TARGET + envName)
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.entity(env, MediaType.APPLICATION_JSON));
+        int connect_trys = 0;
+        StateRest<T> response = new StateRest();
+        while(connect_trys < 10) {
+            try {
+                response = client.target(TARGET + envName)
+                        .request(MediaType.APPLICATION_JSON)
+                        .post(Entity.entity(env, MediaType.APPLICATION_JSON))
+                        .readEntity(StateRest.class);
+                break;
+            } catch (Exception e) {
+                connect_trys ++;
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (Exception et) {
 
-		return response.readEntity(StateRest.class);
+                }
+            }
+        }
+        System.out.println("Connection trys: " + connect_trys);
+		return response;
 	}
 	
 	public StateRest<T> step(int action){

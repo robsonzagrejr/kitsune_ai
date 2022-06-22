@@ -6,7 +6,7 @@ https://github.com/Kautenja/nes-py/blob/master/nes_py/_image_viewer.py
 import pyglet
 from nes_py.wrappers import JoypadSpace
 
-from src.games.super_mario_bros_env import SuperMarioBrosEnv
+from src.games.super_mario_bros_env import KitsuneSuperMarioBrosEnv
 
 
 # the sentinel value for "No Operation
@@ -16,7 +16,7 @@ _NOP = 0
 class KitsuneEnv():
 
     def __init__(self, rom, actions, window, is_training):
-        _env = SuperMarioBrosEnv(rom)
+        _env = KitsuneSuperMarioBrosEnv(rom)
         self._env = JoypadSpace(_env, actions)
 
         self._window = window
@@ -107,13 +107,12 @@ class KitsuneEnv():
     def step(self, action):
         state, reward, done, _ = self._env.step(action)
         self.n_step += 1;
-        self.reward += reward
-        self.score = self._env.get_score()
+        self.reward = reward[0]
+        self.score = reward[1]
 
         # Reseting when traning and get too much steps
         if self.is_training and self.n_step == self.max_step:
             done = True
-            reward = self.reward - 15
 
         # Reseting values and env
         if done:
@@ -124,11 +123,15 @@ class KitsuneEnv():
 
         self.info = {
             'state': state,
-            'reward': [float(self.reward), float(self.score)],
-            'done': done,
+            'reward': reward,
+            'done': bool(done),
         }
         self.frame = state
-        return state, self.reward, done
+        return state, reward, done
+
+
+    def step_info(self, objects):
+        return self._env.step_info(objects)
 
 
     def _run_game(self, dt):

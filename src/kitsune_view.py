@@ -31,7 +31,6 @@ class KitsuneView():
             info = sprite_path.split("/")
             name = info[-1].split(".")[0].split("-")[0]
             img = np.array(cv.imread(sprite_path, 0))
-            img_flip = cv.flip(img, 1)
             w, h = img.shape[::-1]
             # Add image
             self.sprites.append({
@@ -43,16 +42,18 @@ class KitsuneView():
                 "path": sprite_path,
                 "size": (w, h)
             })
-            # Add mirroed image
-            self.sprites.append({
-                "name": name,
-                "id_type": sprite_types.index(info[-2]),
-                "type": info[-2],
-                "img": img_flip,
-                "color": colors[info[-2]],
-                "path": sprite_path,
-                "size": (w, h)
-            })
+            if info[-2] in ['player', 'enemie']:
+                # Add mirroed image
+                img_flip = cv.flip(img, 1)
+                self.sprites.append({
+                    "name": name,
+                    "id_type": sprite_types.index(info[-2]),
+                    "type": info[-2],
+                    "img": img_flip,
+                    "color": colors[info[-2]],
+                    "path": sprite_path,
+                    "size": (w, h)
+                })
         self.frame_obj = None
         self.pool = multiprocessing.Pool(4)
 
