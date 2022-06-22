@@ -120,9 +120,6 @@ class SuperMarioBrosEnv(NESEnv):
         # score is represented as a figure with 6 10's places
         return self._read_mem_range(0x07de, 6)
 
-    def get_score(self):
-        return self._read_mem_range(0x07de, 6)
-
     @property
     def _time(self):
         """Return the time left (0 to 999)."""
@@ -414,4 +411,117 @@ class SuperMarioBrosEnv(NESEnv):
             x_pos=self._x_position,
             y_pos=self._y_position,
         )
+
+
+class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
+
+    def __init__(self, rom, world=1, stage=1):
+        super().__init__(rom, world, stage)
+
+        self.acc_reward = 0
+        self.info = {}
+        self.speed = {}
+        self._scenary_objs = []
+        self._objects_cache = {
+            "scenary": [],
+            "player": [],
+            "objects": [],
+        }
+        self.max_speed = 0
+        self.scenary_speed = 0
+
+    
+    def step(self, action):
+        state, reward, done, _something = super().step(action)
+        self.acc_reward += reward
+
+        step_reward = [float(self.acc_reward), float(self._score)]
+
+        return state, step_reward, done, _something
+
+
+    def step_info(self, objects):
+        objects = self._calc_metrics(objects)
+
+        state = [
+            #type, name, x, y, w ,h
+            [obj['type'], obj['name'], pt[0], pt[1], pt[2], pt[3]]
+            for obj in objects
+            for pt in obj.get('pts',[])
+        ]
+        for s in state:
+            if s[0] == 'player':
+                #print(s)
+                pass
+
+        return state
+
+    
+    def _calc_metrics(self, objects):
+        obstacles_objs = []
+        player_objs = []
+        others_objs = []
+        for obj in objects:
+            if obj['type'] == "player":
+                player_objs += obj['pts']
+            elif obj['type'] == "obstacle":
+                obstacles_objs += obj['pts']
+            else:
+                others_objs += obj['pts']
+
+        # Scenary
+        # pick the last 5 objects of type obstacle,
+        # then get how much the object move in x axis
+        obstacles_objs = sorted(obstacles_objs)
+        if self._objects_cache.get('scenary', []):
+            #Calculate the Speed:
+            """
+            n_to_drop = 0
+            valid = []
+            for obj in self._objects_cache['scenary']:
+                if obj[0] < obstacles_objs[0][0] or obj[1] != obstacles_objs[0][1]:
+                    n_to_drop += 1
+                else:
+                    break
+
+            #n_to_drop = len(valid) - len(self._objects_cache)
+            aux = n_to_drop
+            # time = 1 step frame
+            speeds_x = []
+            speeds_y = []
+            for obj_cache, obj in zip(self._objects_cache['scenary'][n_to_drop:], obstacles_objs):
+                speeds_x.append(obj_cache[0] - obj[0])
+                speeds_y.append(obj_cache[1] - obj[1])
+
+            """
+            obj = obstacles_objs[0]
+            objcc = None
+            speed_x = 0
+            for objc in self._objects_cache['scenary']:
+                if objc[1] == obj[1] and objc[0] >= obj[0]:
+                    objcc = objc
+                    speed_x = objc[0] - obj[0]
+                    break
+
+
+            s = speed_x
+            self.scenary_speed = s
+            if self.max_speed < s:
+                self.max_speed = s
+
+            print(obstacles_objs[0])
+            print(objcc)
+            print(f'speed_x:{s}')
+            print(f'max speed_x:{self.max_speed}')
+            if s < 0:
+                breakpoint()
+
+        self._objects_cache['scenary'] = obstacles_objs
+
+
+        # Player
+        
+        # Objects
+
+        return objects
 
