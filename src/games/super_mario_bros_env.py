@@ -426,6 +426,10 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
         }
         self.max_speed = 0
         self.min_speed = 0
+        self._was_done = False
+        self._metric_objects_cache = []
+        self._need_reset_speed = 0
+        self._last_state = None
 
         super().__init__(rom, world, stage)
 
@@ -439,6 +443,8 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
         state, reward, done, _something = super().step(action)
         # Coping value tu new variable to not adress same memory space
         state = state.copy()
+        self._last_state = state.copy()
+        self._was_done = done
         self.acc_reward += reward
 
         step_reward = [float(self.acc_reward), float(self._score)]
@@ -446,13 +452,15 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
         return state, step_reward, done, _something
 
 
-    def step_info(self, objects):
-        metric_objects = self._calc_metrics(objects)
+    def step_info(self, objects, state):
+        if (state == self._last_state).all():
+            metric_objects = self._calc_metrics(objects)
+            self._metric_objects_cache = metric_objects
 
         state = [
             #type, name, x, y, w, h, vx, vy
             [obj['type'], obj['name'], pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]]
-            for obj in metric_objects 
+            for obj in self._metric_objects_cache
             for pt in obj.get('pts', [])
         ]
 
@@ -502,23 +510,23 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
         
         # Others Objects
         others_objs = sorted(others_objs)
-        
         others_objs_pts = {}
         if self._objects_cache.get('others', []) and others_objs:
             speed_scenary = self._speed_cache.get('scenary', [0])[0]
-            for obj, obj_cache in zip(others_objs, self._objects_cache['others']):
+            aux = max(abs(len(others_objs) - len(self._objects_cache['others'])),0)
+            for obj, obj_cache in zip(others_objs, self._objects_cache['others'][aux:]):
                 speed_x = obj[1][0] - obj_cache[1][0]
                 # Compensation od scenary movement
-                speed_x_n = speed_x + (-speed_scenary) if speed_x < 0 else speed_x - (-speed_scenary)
+                speed_x = speed_x + (-speed_scenary) if speed_x < 0 else speed_x - (-speed_scenary)
                 speed_y = obj[1][1] - obj_cache[1][1]
 
                 if not obj[0] in others_objs_pts.keys():
                     others_objs_pts[obj[0]] = []
-                pts = obj[1] + [speed_x_n, speed_y]
+                pts = obj[1] + [speed_x, speed_y]
                 others_objs_pts[obj[0]].append(pts)
 
         # Update cache
-        self._objects_cache['others'] = others_objs
+        self._objects_cache['others'] = sorted(others_objs)
 
                 
         # Update Objects with Velocity
@@ -550,5 +558,6 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
         self._objects_cache['others'] = []
         self._speed_cache['player'] = [0, 0]
         self._speed_cache['scenary'] = [0, 0]
+        self._speed_cache['others'] = {}
 
 
