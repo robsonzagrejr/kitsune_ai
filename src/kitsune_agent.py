@@ -19,7 +19,7 @@ class KitsuneAgent():
         self.view = view
         self.process = Thread(target=self.app.run, kwargs={'port':'5003'})
 
-        self._frame = self.env.frame
+        self._frame = None
         self._objects = {}
 
         self.app.add_url_rule(
@@ -54,21 +54,21 @@ class KitsuneAgent():
 
     @property
     def result(self):
-        state = self.env.info.get('state', [[0]])
+        state = self.env.info.get('state', None)
         reward = self.env.info.get('reward', [0, 0])
         done = self.env.info.get('done', False)
 
+        objects = []
+        if state is not None:
+            objects = self.view.find_objects(state)
+            self.view.frame_obj = self.view.get_image_with_objects(state, objects)
+
+        info_objects = self.env.step_info(objects)
+        self._objects = info_objects
         self._frame = state
 
-        objects = []
-        if self._frame is not None:
-            objects = self.view.find_objects(self._frame)
-            self.view.frame_obj = self.view.get_image_with_objects(self._frame, objects)
-
-        info_state = self.env.step_info(objects)
-
         return {
-            'state': info_state,
+            'state': info_objects,
             'reward': reward,
             'terminal': done,
         }

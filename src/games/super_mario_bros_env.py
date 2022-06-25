@@ -437,6 +437,8 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
     
     def step(self, action):
         state, reward, done, _something = super().step(action)
+        # Coping value tu new variable to not adress same memory space
+        state = state.copy()
         self.acc_reward += reward
 
         step_reward = [float(self.acc_reward), float(self._score)]
