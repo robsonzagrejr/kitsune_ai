@@ -46,12 +46,6 @@ class Kitsune():
 
     def _play_game(self, dt):
         return
-        start_time = time.time()
-        self.agent.update_status()
-        frame, objects = self.agent.status
-        self.view.frame_obj = self.view.get_image_with_objects(frame, objects)
-        #print(f"TEMPO: {time.time() - start_time}")
-
 
 
     def play(self):
@@ -71,7 +65,7 @@ class Kitsune():
 
         # Game Image
         if self.agent._frame is not None:
-            get_pyglet_image(self.env.frame).blit(
+            get_pyglet_image(self.agent._frame).blit(
                 x=0, y=0,
                 width=self._window.width//2, height=self._window.height//2
             )

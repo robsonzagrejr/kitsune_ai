@@ -67,14 +67,16 @@ class KitsuneView():
 
 
     def find_objects(self, image):
-        img_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-        # Using parallelism to speedup the search
-        objects = self.pool.map(
-            partial(KitsuneView.find_sprite,img_gray=img_gray),
-            self.sprites
-        )
-        # Removing None results
-        objects = [obj for obj in objects if obj]
+        objects = []
+        if image is not None:
+            img_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+            # Using parallelism to speedup the search
+            objects = self.pool.map(
+                partial(KitsuneView.find_sprite,img_gray=img_gray),
+                self.sprites
+            )
+            # Removing None results
+            objects = [obj for obj in objects if obj]
 
         return objects
 

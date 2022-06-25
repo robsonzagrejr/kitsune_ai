@@ -26,7 +26,6 @@ class KitsuneEnv():
         self.episode = 0
         self.n_step = 0
         self.max_step = 60*30
-        self.frame = None
         self.key_mode = not is_training
         self.action = 0
         self.is_training = is_training
@@ -126,7 +125,6 @@ class KitsuneEnv():
             'reward': reward,
             'done': bool(done),
         }
-        self.frame = state
         return state, reward, done
 
 
