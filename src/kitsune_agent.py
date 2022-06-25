@@ -65,9 +65,7 @@ class KitsuneAgent():
             objects = self.view.find_objects(self._frame)
             self.view.frame_obj = self.view.get_image_with_objects(self._frame, objects)
 
-
         info_state = self.env.step_info(objects)
-
 
         return {
             'state': info_state,

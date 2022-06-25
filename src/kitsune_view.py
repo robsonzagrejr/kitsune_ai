@@ -32,6 +32,14 @@ class KitsuneView():
             name = info[-1].split(".")[0].split("-")[0]
             img = np.array(cv.imread(sprite_path, 0))
             w, h = img.shape[::-1]
+            # Compensation of mario simple sprite
+            if name == 'mario':
+                name_t = info[-1].split(".")[0].split("-")[1]
+                w = w+6
+                if name_t == 'small':
+                    h = 2*h + 4
+                else:
+                    h = 3*h + 5
             # Add image
             self.sprites.append({
                 "name": name,
@@ -106,6 +114,12 @@ class KitsuneView():
                         int(w), int(h)
                     ]
             else:
+                # Centralize mario sprite
+                if sprite["name"] == "mario":
+                    pt = list(pt)
+                    pt[0] = pt[0] - 3
+                    pt[1] = pt[1] - 3
+
                 locales_simple[pt[0]] = [
                     int(pt[0]), int(pt[1]),
                     int(w), int(h)
