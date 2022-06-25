@@ -416,19 +416,23 @@ class SuperMarioBrosEnv(NESEnv):
 class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
 
     def __init__(self, rom, world=1, stage=1):
-        super().__init__(rom, world, stage)
-
         self.acc_reward = 0
         self.info = {}
-        self.speed = {}
-        self._scenary_objs = []
+        self._speed_cache = {}
         self._objects_cache = {
             "scenary": [],
             "player": [],
             "objects": [],
         }
         self.max_speed = 0
-        self.scenary_speed = 0
+        self.min_speed = 0
+
+        super().__init__(rom, world, stage)
+
+
+    def reset(self):
+        self._clean_cache()
+        return super().reset()
 
     
     def step(self, action):
@@ -441,18 +445,14 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
 
 
     def step_info(self, objects):
-        objects = self._calc_metrics(objects)
+        metric_objects = self._calc_metrics(objects)
 
         state = [
-            #type, name, x, y, w ,h
-            [obj['type'], obj['name'], pt[0], pt[1], pt[2], pt[3]]
-            for obj in objects
-            for pt in obj.get('pts',[])
+            #type, name, x, y, w, h, vx, vy
+            [obj['type'], obj['name'], pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]]
+            for obj in metric_objects 
+            for pt in obj.get('pts', [])
         ]
-        for s in state:
-            if s[0] == 'player':
-                #print(s)
-                pass
 
         return state
 
@@ -467,61 +467,86 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
             elif obj['type'] == "obstacle":
                 obstacles_objs += obj['pts']
             else:
-                others_objs += obj['pts']
+                others_objs += [(obj['name'], pt) for pt in sorted(obj['pts'])]
 
         # Scenary
-        # pick the last 5 objects of type obstacle,
-        # then get how much the object move in x axis
         obstacles_objs = sorted(obstacles_objs)
-        if self._objects_cache.get('scenary', []):
+        if self._objects_cache.get('scenary', []) and obstacles_objs:
             #Calculate the Speed:
-            """
-            n_to_drop = 0
-            valid = []
-            for obj in self._objects_cache['scenary']:
-                if obj[0] < obstacles_objs[0][0] or obj[1] != obstacles_objs[0][1]:
-                    n_to_drop += 1
-                else:
-                    break
-
-            #n_to_drop = len(valid) - len(self._objects_cache)
-            aux = n_to_drop
-            # time = 1 step frame
-            speeds_x = []
-            speeds_y = []
-            for obj_cache, obj in zip(self._objects_cache['scenary'][n_to_drop:], obstacles_objs):
-                speeds_x.append(obj_cache[0] - obj[0])
-                speeds_y.append(obj_cache[1] - obj[1])
-
-            """
             obj = obstacles_objs[0]
-            objcc = None
             speed_x = 0
             for objc in self._objects_cache['scenary']:
                 if objc[1] == obj[1] and objc[0] >= obj[0]:
-                    objcc = objc
-                    speed_x = objc[0] - obj[0]
+                    speed_x = obj[0] - objc[0]
                     break
 
+            # Filter a number to not get some error
+            if speed_x >= -12:
+                self._speed_cache['scenary'] = [speed_x, 0]
 
-            s = speed_x
-            self.scenary_speed = s
-            if self.max_speed < s:
-                self.max_speed = s
-
-            print(obstacles_objs[0])
-            print(objcc)
-            print(f'speed_x:{s}')
-            print(f'max speed_x:{self.max_speed}')
-            if s < 0:
-                breakpoint()
-
+        # Update cache
         self._objects_cache['scenary'] = obstacles_objs
 
-
         # Player
-        
-        # Objects
+        if self._objects_cache.get('player', []) and player_objs:
+            player_speed_x = player_objs[0][0] - self._objects_cache['player'][0][0]
+            player_speed_y = player_objs[0][1] - self._objects_cache['player'][0][1]
+            # Compensation when running in most left part of screen
+            player_speed_x += -self._speed_cache.get('scenary', [0])[0]
+            self._speed_cache['player'] = [player_speed_x, player_speed_y]
 
-        return objects
+        # Update cache
+        self._objects_cache['player'] = sorted(player_objs)
+        
+        # Others Objects
+        others_objs = sorted(others_objs)
+        
+        others_objs_pts = {}
+        if self._objects_cache.get('others', []) and others_objs:
+            speed_scenary = self._speed_cache.get('scenary', [0])[0]
+            for obj, obj_cache in zip(others_objs, self._objects_cache['others']):
+                speed_x = obj[1][0] - obj_cache[1][0]
+                # Compensation od scenary movement
+                speed_x_n = speed_x + (-speed_scenary) if speed_x < 0 else speed_x - (-speed_scenary)
+                speed_y = obj[1][1] - obj_cache[1][1]
+
+                if not obj[0] in others_objs_pts.keys():
+                    others_objs_pts[obj[0]] = []
+                pts = obj[1] + [speed_x_n, speed_y]
+                others_objs_pts[obj[0]].append(pts)
+
+        # Update cache
+        self._objects_cache['others'] = others_objs
+
+                
+        # Update Objects with Velocity
+        metric_objects = []
+        for obj in objects:
+            if obj['type'] == "player":
+                pts = [obj['pts'][0] + self._speed_cache['player']]
+                obj['pts'] = pts
+                metric_objects.append(obj)
+                
+            elif obj['type'] == "obstacle":
+                pts = [pt+[0, 0] for pt in obj['pts']]
+                obj['pts'] = pts
+                metric_objects.append(obj)
+            else:
+                if obj['name'] in others_objs_pts.keys():
+                    pts = others_objs_pts[obj['name']]
+                else:
+                    pts = [pt+[0, 0] for pt in obj['pts']]
+                obj['pts'] = pts
+                metric_objects.append(obj)
+
+        return metric_objects
+
+    
+    def _clean_cache(self):
+        self._objects_cache['player'] = []
+        self._objects_cache['scenary'] = []
+        self._objects_cache['others'] = []
+        self._speed_cache['player'] = [0, 0]
+        self._speed_cache['scenary'] = [0, 0]
+
 
