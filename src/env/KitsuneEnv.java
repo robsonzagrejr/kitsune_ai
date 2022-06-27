@@ -21,8 +21,9 @@ public class KitsuneEnv extends Artifact{
     public void init() {
         Map<String, String> parameters = new HashMap<>();
         StateRest<List<String>> info = kitsune_env.initialize("KitsuneEnv", parameters);
-        updatePercepts(info);
         defineObsProperty("ready");
+        defineObsProperty("player");
+        updatePercepts(info);
     }
 
     @OPERATION
@@ -86,9 +87,10 @@ public class KitsuneEnv extends Artifact{
             }
             String propertie_type = "object";
             if (obj.get(0).equals("player")) {
+                //ObsProperty player_obj= getObsProperty("player");
+                removeObsProperty("player");
                 propertie_type = "player";
             }
-
             this.lastStepPropeties.add(
                 defineObsProperty(
                     propertie_type,
@@ -112,7 +114,9 @@ public class KitsuneEnv extends Artifact{
 
     private void clearPercepts () {
         for (ObsProperty obs:this.lastStepPropeties)
-            removeObsProperty(obs.getName());
+            if (!obs.getName().equals("player")){
+                removeObsProperty(obs.getName());
+            }
         this.lastStepPropeties.clear();
     }
 }

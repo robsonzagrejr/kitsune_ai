@@ -436,6 +436,8 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
 
     def reset(self):
         self._clean_cache()
+        self.acc_reward = 0
+        self._was_done = False
         return super().reset()
 
     
@@ -445,7 +447,7 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
         state = state.copy()
         self._last_state = state.copy()
         self._was_done = done
-        self.acc_reward += reward
+        self.acc_reward = reward
 
         step_reward = [float(self.acc_reward), float(self._score)]
 
@@ -453,9 +455,8 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
 
 
     def step_info(self, objects, state):
-        if (state == self._last_state).all():
-            metric_objects = self._calc_metrics(objects)
-            self._metric_objects_cache = metric_objects
+        metric_objects = self._calc_metrics(objects)
+        self._metric_objects_cache = metric_objects
 
         state = [
             #type, name, x, y, w, h, vx, vy
