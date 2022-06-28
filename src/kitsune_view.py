@@ -15,8 +15,10 @@ from src.config import (
 
 class KitsuneView():
     def __init__(self, sprites_path):
+        get_name = lambda x: x.split("/")[-1].split(".")[0].split("-")[0]
         self.sprites_path = sprites_path
-        sprite_types = list(set([s.split("/")[-2] for s in sprites_path]))
+        sprite_names = sorted(list(set([get_name(s) for s in sprites_path])))
+        sprite_types = sorted(list(set([s.split("/")[-2] for s in sprites_path])))
         colors = {
             sprite_type: (
                 random.randint(0,255),
@@ -29,7 +31,7 @@ class KitsuneView():
         self.sprites = []
         for sprite_path in sprites_path:
             info = sprite_path.split("/")
-            name = info[-1].split(".")[0].split("-")[0]
+            name = get_name(sprite_path)
             img = np.array(cv.imread(sprite_path, 0))
             w, h = img.shape[::-1]
             # Compensation of mario simple sprite
@@ -42,6 +44,7 @@ class KitsuneView():
                     h = 3*h + 5
             # Add image
             self.sprites.append({
+                "id_name": sprite_names.index(name),
                 "name": name,
                 "id_type": sprite_types.index(info[-2]),
                 "type": info[-2],
@@ -54,6 +57,7 @@ class KitsuneView():
                 # Add mirroed image
                 img_flip = cv.flip(img, 1)
                 self.sprites.append({
+                    "id_name": sprite_names.index(name),
                     "name": name,
                     "id_type": sprite_types.index(info[-2]),
                     "type": info[-2],
@@ -64,6 +68,14 @@ class KitsuneView():
                 })
         self.frame_obj = None
         self.pool = multiprocessing.Pool(4)
+
+        table_border = "++++++++++++++++++++++++++++++++"
+        print(table_border)
+        for i in range(len(sprite_names)):
+            name = sprite_names[i]
+            spaces = " "*(len(table_border)-len(name)-len(str(i))-2-4) 
+            print(f"| {name}-> {i}{spaces}|")
+        print(table_border)
 
 
     def find_objects(self, image):
@@ -133,7 +145,9 @@ class KitsuneView():
             #objects.append(
             return (
                 {
+                    "id_name": sprite["id_name"],
                     "name": sprite["name"],
+                    "id_type": sprite["id_type"],
                     "type": sprite["type"],
                     "pts": sprint_pts,
                     "w": w,
