@@ -85,6 +85,7 @@ class KitsuneAgent():
 
     def route_env_action(self, env:str, action:str):
         # Implement Env step action
+        print(action)
 
         if self.env.is_training:
             _ , reward, done = self.env.step(int(action))
@@ -110,7 +111,7 @@ class KitsuneAgent():
 
 
     def route_agent_action(self, agent_id:str, action_type:str):
-        return {'action': [3]}
+        return jsonify({'action': [[4]]})
         json_data = request.get_json(force=True)
         #print("##################################")
         #print(json_data)
