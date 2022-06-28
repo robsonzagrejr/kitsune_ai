@@ -7,6 +7,9 @@ import logging
 from threading import Thread
 import time
 
+from src.rl.qlearning import QLearning
+
+
 class KitsuneAgent():
 
     def __init__(self, env, view):
@@ -21,6 +24,7 @@ class KitsuneAgent():
 
         self._frame = None
         self._objects = {}
+        self._reset_state = self.env.reset_state
 
         self.app.add_url_rule(
             '/env/<string:env>', 'route_env_info',
@@ -91,7 +95,6 @@ class KitsuneAgent():
 
 
     def route_agent_info(self, agent_id:str):
-        return ''
         json_data = request.get_json(force=True)
         print("##################################")
         print("""a_shape {}, a_type {}, a_min {}, a_max {}, o_shape {}, o_type {}, init_state {},
@@ -99,6 +102,7 @@ class KitsuneAgent():
         json_data['a_min'], json_data['a_max'], json_data['o_shape'], json_data['o_type'],
         json_data['init_state'], json_data['agent_type'], json_data['parameters']))
         print("##################################")
+        return  {}
         if json_data['agent_type'] == "dqn":
             agent = DqnAgent(json_data['a_max'][0] + 1, json_data['o_shape'][0], json_data['parameters'], agent_id)
         agents[agent_id] = agent
