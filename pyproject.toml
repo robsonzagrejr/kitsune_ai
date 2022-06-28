@@ -17,6 +17,7 @@ pyglet = "^1.5.11"
 fastapi = "^0.78.0"
 uvicorn = "^0.17.6"
 Flask = "^2.1.2"
+pandas = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 

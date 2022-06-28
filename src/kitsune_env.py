@@ -26,10 +26,12 @@ class KitsuneEnv():
         self.episode = 0
         self.n_step = 0
         self.max_step = 60*30
+        self.reset_step = False
         self.key_mode = not is_training
         self.action = 0
         self.is_training = is_training
         self.info = {}
+        self.reset_state = self._env.reset().copy()
 
         # Map between pyglet and nes-py
         self.KEY_MAP = {
@@ -110,7 +112,7 @@ class KitsuneEnv():
         self.score = reward[1]
 
         # Reseting when traning and get too much steps
-        if self.is_training and self.n_step == self.max_step:
+        if self.reset_step and self.is_training and self.n_step == self.max_step:
             done = True
 
         # Reseting values and env

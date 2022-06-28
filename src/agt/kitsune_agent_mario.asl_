@@ -1,5 +1,7 @@
 // Configuring RL soft plans
-rl_algorithm(go_right, dqn).
+rl_algorithm(go_right, sarsa).
+rl_algorithm(kill_enemie, sarsa).
+rl_algorithm(get_more_score, sarsa).
 
 rl_parameter(policy, egreedy).
 rl_parameter(alpha, 0.26).
@@ -14,9 +16,21 @@ rl_observe(go_right, obj_player_touching(_, _, _, _, _, _, _, _, _, _, _)).
 rl_observe(go_right, path(_)).
 rl_observe(go_right, enemie(_)).
 
+rl_observe(kill_enemie, player(_, _, _, _, _)).
+rl_observe(kill_enemie, obj_player_touching(_, _, _, _, _, _, _, _, _, _, _)).
+rl_observe(kill_enemie, enemie(_, _, _, _, _)).
+
+rl_observe(get_more_score, player(_, _, _, _, _)).
+rl_observe(get_more_score, obj_player_touching(_, _, _, _, _, _, _, _, _, _, _)).
+rl_observe(get_more_score, object(_, _, _, _, _)).
+
 rl_reward(go_right, R) :- reward(R).
+rl_reward(kill_enemie, R) :- score(R).
+rl_reward(get_more_score, R) :- score(R).
 
 rl_terminal(go_right) :- gameover.
+rl_terminal(kill_enemie) :- gameover.
+rl_terminal(get_more_score) :- gameover.
 
 
 // Define where the player is touching the object
@@ -105,6 +119,15 @@ y_range(_,_,_,_,0, none).
     left_a, left_b, left_a_b
 )))]
 +!move(Direction) <- move(Direction).
+
++!object(N, X, Y, W, H, VX, VY): enemie(N) <- rl.execute(kill_enemie).
+@action2[rl_goal(kill_enemie), rl_param(direction(set(
+    noop, right, left, down, a, b,
+    right_a, right_b, right_a_b,
+    left_a, left_b, left_a_b
+)))]
++!move(Direction) <- move(Direction).
+
 
 //noop, right, left, down, a, b,
 //right_a, right_b, right_a_b,
