@@ -1,5 +1,5 @@
 // Configuring RL soft plans
-rl_algorithm(go_right, sarsa).
+rl_algorithm(go_right, qlearning).
 
 rl_parameter(policy, egreedy).
 rl_parameter(alpha, 0.26).
@@ -8,33 +8,27 @@ rl_parameter(epsilon, 0.4).
 rl_parameter(epsilon_decay, 0.9999).
 rl_parameter(epsilon_min, 0).
 
-rl_observe(go_right, player(
-    int(0, 17),
-    real(0, 500), //x
-    real(0, 500), //y
-    real(0, 500), //w
-    real(0, 500), //h
-    real(-500, 500), //velocity_x
-    real(-500, 500) //velocity_y
-)).
-rl_observe(go_right, object(
-    int(0, 17),
-    real(0, 500), //x
-    real(0, 500), //y
-    real(0, 500), //w
-    real(0, 500), //h
-    real(-500, 500), //velocity_x
-    real(-500, 500) //velocity_y
-)).
-//set(
-//        goomba, koopa, koopa_shell,                                       //enemie
-//        coin, flower, g_mushroom, item, l_mushroom, princess, start, toad,//item
-//        flagpole, question,                                               //misc
-//        block, brick, pipe, rock                                          //obstacle
-//    ),   //name
+//rl_observe(go_right, player(
+//    real(0, 17),
+//    real(0, 500), //x
+//    real(0, 500), //y
+//    real(0, 500), //w
+//    real(0, 500), //h
+//    real(-500, 500), //velocity_x
+//    real(-500, 500) //velocity_y
+//)).
+//rl_observe(go_right, object(
+//    real(0, 17),
+//    real(0, 500), //x
+//    real(0, 500), //y
+//    real(0, 500), //w
+//    real(0, 500), //h
+//    real(-500, 500), //velocity_x
+//    real(-500, 500) //velocity_y
+//)).
 //rl_observe(go_right, obj_player_touching(_, _, _, _, _, _, _, _, _, _, _)).
 rl_observe(go_right, t_path(int(0, 17))).
-rl_observe(go_right, t_enemie(int(0, 17))).
+//rl_observe(go_right, t_enemie(real(0, 17))).
 
 rl_reward(go_right, R) :- reward(R).
 

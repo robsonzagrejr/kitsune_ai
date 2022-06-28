@@ -185,12 +185,19 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
         		}
 			} else
         	for(ObservationParameter param : observation.getParameters()) {
+                String value = param.getValue();
+                if (value == null) {
+                    value = "-9999";
+                }
         		if(param.getType() == Observation.ParameterType.REAL) {
-        			stateTF.add(Double.parseDouble(param.getValue()));
+        			//stateTF.add(Double.parseDouble(param.getValue()));
+        			stateTF.add(Double.parseDouble(value));
         		} else if(param.getType() == Observation.ParameterType.INT) {
-        			stateTF.add(Double.parseDouble(param.getValue()));
+        			//stateTF.add(Double.parseDouble(param.getValue()));
+        			stateTF.add(Double.parseDouble(value));
         		} else if(param.getType() == Observation.ParameterType.SET) {
-        			stateTF.add((double) param.getSet().indexOf(param.getValue()));
+        			//stateTF.add((double) param.getSet().indexOf(param.getValue()));
+        			stateTF.add((double) param.getSet().indexOf(value));
         		}
         	}
         }
