@@ -9,26 +9,30 @@ rl_parameter(epsilon_decay, 0.9999).
 rl_parameter(epsilon_min, 0).
 
 //rl_observe(go_right, player(
-//    real(0, 17),
-//    real(0, 500), //x
-//    real(0, 500), //y
-//    real(0, 500), //w
-//    real(0, 500), //h
-//    real(-500, 500), //velocity_x
-//    real(-500, 500) //velocity_y
+//    int(0, 17),
+//    int(0, 500), //x
+//    int(0, 500), //y
+//    int(0, 500), //w
+//    int(0, 500), //h
+//    int(-500, 500), //velocity_x
+//    int(-500, 500) //velocity_y
 //)).
-//rl_observe(go_right, object(
-//    real(0, 17),
-//    real(0, 500), //x
-//    real(0, 500), //y
-//    real(0, 500), //w
-//    real(0, 500), //h
-//    real(-500, 500), //velocity_x
-//    real(-500, 500) //velocity_y
-//)).
+rl_observe(go_right, [
+    object(
+        int(0, 17),
+        int(0, 500), //x
+        int(0, 500), //y
+        int(0, 500), //w
+        int(0, 500), //h
+        int(-500, 500), //velocity_x
+        int(-500, 500) //velocity_y
+    ),
+    t_path(int(0,17))
+    //t_enemie(int(0,17))
+]).
 //rl_observe(go_right, obj_player_touching(_, _, _, _, _, _, _, _, _, _, _)).
-rl_observe(go_right, t_path(int(0, 17))).
-//rl_observe(go_right, t_enemie(real(0, 17))).
+//rl_observe(go_right, t_path(int(0, 17))).
+//rl_observe(go_right, t_enemie(int(0, 17))).
 
 rl_reward(go_right, R) :- reward(R).
 

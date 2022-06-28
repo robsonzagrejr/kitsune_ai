@@ -18,6 +18,7 @@ import rl.component.ObservationParameter;
 import rl.component.PlanLibraryRL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,10 +64,10 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
 			}
 		}
 		
-		List<Double> currentState = observationsToTF(currentObservation);
-        StateRest<Double> state = new StateRest<>();
+		List<List<Double>> currentState = observationsToTF(currentObservation);
+        StateRest<List<Double>> state = new StateRest<>();
         state.setState(currentState);
-        state.setState_type("double");
+        state.setState_type("list(double)");
         state.setReward(preActionReward);
         state.setIs_terminal(isTerminal);
         
@@ -148,7 +149,8 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
     	environment.setO_max(o_max);
 		
     	//initial state
-        environment.setInit_state(observationsToTF(bb.getCurrentObservation(goal)));
+        //environment.setInit_state(observationsToTF(bb.getCurrentObservation(goal)));
+        environment.setInit_state(new ArrayList());
 		
 		//parameters
 		Map<Term, Term> parameters = bb.getRlParameter();
@@ -165,18 +167,43 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
 		
 	}
 	
-	protected List<Double> observationsToTF(Set<Literal> observationsLiteral){
+	protected List<List<Double>> observationsToTF(Set<Literal> observationsLiteral){
 		List<Observation> currentGround = new ArrayList<>();
+        List<List<Double>> a;
+        List<List<Double>> b = new ArrayList<List<Double>>();
+        System.out.println("\n------------");
 		for(Term observation : observationsLiteral) {
 			String observationName = ((Literal) observation).getFunctor();
 			Observation o = observationsNameMap.get(observationName);
 			o.setParamValues(observation);
+            System.out.println(observation);
+            System.out.println(o);
 			if(o.getParameters().size() == 0) {
 				currentGround.add(o);
 			}
+            List<Double> aux = new ArrayList<>();
+            for(ObservationParameter param : o.getParameters()) {
+                String value = param.getValue();
+                if (value == null) {
+                    value = "-9999";
+                }
+        		if(param.getType() == Observation.ParameterType.REAL) {
+        			//stateTF.add(Double.parseDouble(param.getValue()));
+        			aux.add(Double.parseDouble(value));
+        		} else if(param.getType() == Observation.ParameterType.INT) {
+        			//stateTF.add(Double.parseDouble(param.getValue()));
+        			aux.add(Double.parseDouble(value));
+        		} else if(param.getType() == Observation.ParameterType.SET) {
+        			//stateTF.add((double) param.getSet().indexOf(param.getValue()));
+        			aux.add((double) param.getSet().indexOf(value));
+        		}
+        	}
+                b.add(aux);
 		}
         List<Double> stateTF = new ArrayList<>();
+        System.out.println("\n=================");
         for(Observation observation : observations) {
+            System.out.println(observation);
         	if(observation.getParameters().size() == 0) {
         		if(currentGround.contains(observation)){
         			stateTF.add(1.0);
@@ -201,6 +228,8 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
         		}
         	}
         }
-        return stateTF;
+        a = new ArrayList<List<Double>>(Arrays.asList(stateTF));
+        a.add(new ArrayList<Double>(Arrays.asList(0.0,0.0)));
+        return b;
 	} 
 }

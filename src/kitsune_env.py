@@ -24,6 +24,7 @@ class KitsuneEnv():
         self.reward = 0
         self.score = 0
         self.episode = 0
+        self.max_episode = 200
         self.n_step = 0
         self.max_step = 60*30
         self.reset_step = False
