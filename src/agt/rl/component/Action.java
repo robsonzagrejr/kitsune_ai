@@ -3,6 +3,7 @@ package rl.component;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.List;
 import java.util.Set;
 
@@ -79,10 +80,10 @@ public class Action implements Serializable{
 		List<Action> discreteActions = new ArrayList<>();
 
 		for (Action action : parametrizedAction) {
-			Set<Action> discreteSet = new HashSet<>();
+			List<Action> discreteSet = new ArrayList<>();
 			discreteSet.add(action);
 			for (ActionParameter param : action.getParameters()) {
-				Set<Action> tmpSet = new HashSet<>();
+				List<Action> tmpSet = new ArrayList<>();
 				if (param.getType().equals(ParameterType.SET)) {
 					for (String value : param.getSet()) {
 						for (Action next : discreteSet) {
@@ -121,7 +122,6 @@ public class Action implements Serializable{
 						}
 					}
 				}
-
 				discreteSet = tmpSet;
 			}
 			discreteActions.addAll(discreteSet);
