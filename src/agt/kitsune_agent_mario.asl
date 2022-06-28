@@ -1,15 +1,36 @@
 // Configuring RL soft plans
-rl_algorithm(go_right, dqn).
+rl_algorithm(go_right, sarsa).
 
 rl_parameter(policy, egreedy).
-//rl_parameter(alpha, 0.26).
-//rl_parameter(gamma, 0.9).
-//rl_parameter(epsilon, 0.4).
-//rl_parameter(epsilon_decay, 0.9999).
-//rl_parameter(epsilon_min, 0).
+rl_parameter(alpha, 0.26).
+rl_parameter(gamma, 0.9).
+rl_parameter(epsilon, 0.4).
+rl_parameter(epsilon_decay, 0.9999).
+rl_parameter(epsilon_min, 0).
 
-//rl_observe(go_right, player(_, _, _, _, _)).
-//rl_observe(go_right, object(_, _, _, _, _)).
+rl_observe(go_right, player(
+    set(mario),   //name
+    real(0, 500), //x
+    real(0, 500), //y
+    real(0, 500), //w
+    real(0, 500), //h
+    real(-500, 500), //velocity_x
+    real(-500, 500) //velocity_y
+)).
+rl_observe(go_right, object(
+    set(
+        goomba, koopa, koopa_shell,                                       //enemie
+        coin, flower, g_mushroom, item, l_mushroom, princess, start, toad,//item
+        flagpole, question,                                               //misc
+        block, brick, pipe, rock                                          //obstacle
+    ),   //name
+    real(0, 500), //x
+    real(0, 500), //y
+    real(0, 500), //w
+    real(0, 500), //h
+    real(-500, 500), //velocity_x
+    real(-500, 500) //velocity_y
+)).
 //rl_observe(go_right, obj_player_touching(_, _, _, _, _, _, _, _, _, _, _)).
 rl_observe(go_right, path(set(rock))).
 //rl_observe(go_right, enemie(_)).

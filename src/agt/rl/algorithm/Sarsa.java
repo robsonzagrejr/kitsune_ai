@@ -12,6 +12,7 @@ import jason.asSyntax.Literal;
 import jason.asSyntax.Term;
 import rl.beliefbase.BeliefBaseRL;
 import rl.component.Action;
+import rl.component.PlanLibraryRL;
 
 public class Sarsa implements AlgorithmRL {
 
@@ -24,20 +25,30 @@ public class Sarsa implements AlgorithmRL {
 
 	private String previousState = null;
 	private Action previousAction = null;
+    private String goal;
+    private List<Action> actions;
 
 	@SuppressWarnings("unchecked")
-	public Sarsa() {
+	public Sarsa(String goal) {
 		if (serializer.getBehaviour() != null) {
 			q = (Map<String, Map<Action, Double>>) serializer.getBehaviour();
 		}
+        this.goal = goal;
 	}
+
+
+    @Override
+	public void initialize(Agent agent, BeliefBaseRL bb) {
+		this.actions = Action.discretizeAction(PlanLibraryRL.getAllActionsForGoal(agent, goal));
+    }
+
 
 	@Override
 	public double expectedReturn(Set<Action> action, Set<Literal> observation) {
 		String state = observationToState(observation);
 		Map<Action, Double> valueFunctionState = q.get(state);
 		if (valueFunctionState != null) {
-			List<Action> actions = Action.discretizeAction(action);
+			//List<Action> actions = Action.discretizeAction(action);
 			Action selectedAction = selectAction(state, actions);
 			if (valueFunctionState.containsKey(selectedAction)) {
 				double expecterReward = valueFunctionState.get(selectedAction);
@@ -54,7 +65,7 @@ public class Sarsa implements AlgorithmRL {
 		parameters.updateParameters(parameter);
 
 		String state = observationToState(observation);
-		List<Action> actions = Action.discretizeAction(action);
+		//List<Action> actions = Action.discretizeAction(action);
 		addNewActionToQ(state, actions);
 
 		Action selectedAction = selectAction(state, actions);
@@ -118,8 +129,5 @@ public class Sarsa implements AlgorithmRL {
 		}
 		return state;
 	}
-
-	@Override
-	public void initialize(Agent agent, BeliefBaseRL bb) {}
 
 }
