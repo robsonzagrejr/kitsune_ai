@@ -82,6 +82,9 @@ public class Observation implements Serializable{
 	public void setParamValues(Term observationTerm) {
 		Literal observation = (Literal) observationTerm;
 		int index = 0;
+        System.out.println("\n----->");
+        System.out.println(parameters);
+        System.out.println(observation.getTerms());
 		for(Term param : observation.getTerms()) {
 			parameters.get(index).setValue(param.toString());
 			index++;
