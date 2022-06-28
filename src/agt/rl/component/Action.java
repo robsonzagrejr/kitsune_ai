@@ -126,6 +126,18 @@ public class Action implements Serializable{
 			}
 			discreteActions.addAll(discreteSet);
 		}
+        System.out.println("\n-------------Actions-------------");
+        System.out.println("\n"+discreteActions.get(0).parameters.get(0).getSet()+"\n-----");
+        List<String> sets = discreteActions.get(0).parameters.get(0).getSet();
+        int aux = 0;
+		for (Action action : discreteActions) {
+            String value = action.parameters.get(0).getValue();
+            int idx = sets.indexOf(value);
+            System.out.println("("+idx+") "+value+"-> "+aux);
+
+            aux ++;
+        }
+        System.out.println("---------------------------------\n");
 
 		return discreteActions;
 	}

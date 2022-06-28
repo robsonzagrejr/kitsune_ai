@@ -64,9 +64,6 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
 		}
 		
 		List<Double> currentState = observationsToTF(currentObservation);
-        System.out.println("-------");
-        System.out.println(currentState);
-		
         StateRest<Double> state = new StateRest<>();
         state.setState(currentState);
         state.setState_type("double");
@@ -81,10 +78,6 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
 
         @SuppressWarnings("unchecked")
 		ActionRest<List<Integer>> actionRest = response.readEntity(ActionRest.class);
-        System.out.println("+_+_+_+_+_+_+");
-        System.out.println(actionRest.getAction());
-        System.out.println(actionRest.getAction().get(0));
-        System.out.println(actionRest.getAction().get(0).get(0));
 		return actions.get(actionRest.getAction().get(0).get(0));
 	}
 
@@ -101,6 +94,11 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
 		environment.setAgent_type(getMethod());
 		//actions specification
 		actions = Action.discretizeAction(PlanLibraryRL.getAllActionsForGoal(agent, goal));
+
+        /*for (ActionParameter ac : actions.get(1)) {
+            System.out.println("\nAction: ");
+            System.out.println(ac);
+        }*/
         
         environment.setA_type("int");
         List<Integer> a_shape = new ArrayList<>();
@@ -172,13 +170,10 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
 		for(Term observation : observationsLiteral) {
 			String observationName = ((Literal) observation).getFunctor();
 			Observation o = observationsNameMap.get(observationName);
-            System.out.println("\n====");
-            System.out.println(observationName);
 			o.setParamValues(observation);
 			if(o.getParameters().size() == 0) {
 				currentGround.add(o);
 			}
-            System.out.println("\n------");
 		}
         List<Double> stateTF = new ArrayList<>();
         for(Observation observation : observations) {

@@ -100,9 +100,9 @@ y_range(_,_,_,_,0, none).
 +!start : ready <- rl.execute(go_right); !start. //!start in order to continue after the end of the episode
 
 @action1[rl_goal(go_right), rl_param(direction(set(
-    noop, right, left, down, a, b,
-    right_a, right_b, right_a_b,
-    left_a, left_b, left_a_b
+    noop, right, right_a, right_b, right_a_b,
+    left, left_a, left_b, left_a_b, 
+    down, up, a, b
 )))]
 +!move(Direction) <- move(Direction).
 
