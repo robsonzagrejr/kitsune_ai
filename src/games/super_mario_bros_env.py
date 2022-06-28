@@ -460,7 +460,7 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
 
         state = [
             #type, name, x, y, w, h, vx, vy
-            [obj['type'], obj['name'], pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]]
+            [obj['type'], obj['id_name'], pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]]
             for obj in self._metric_objects_cache
             for pt in obj.get('pts', [])
         ]

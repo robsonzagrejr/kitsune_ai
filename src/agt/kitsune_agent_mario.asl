@@ -9,7 +9,7 @@ rl_parameter(epsilon_decay, 0.9999).
 rl_parameter(epsilon_min, 0).
 
 rl_observe(go_right, player(
-    set(mario),   //name
+    int(0, 17),
     real(0, 500), //x
     real(0, 500), //y
     real(0, 500), //w
@@ -18,12 +18,7 @@ rl_observe(go_right, player(
     real(-500, 500) //velocity_y
 )).
 rl_observe(go_right, object(
-    set(
-        goomba, koopa, koopa_shell,                                       //enemie
-        coin, flower, g_mushroom, item, l_mushroom, princess, start, toad,//item
-        flagpole, question,                                               //misc
-        block, brick, pipe, rock                                          //obstacle
-    ),   //name
+    int(0, 17),
     real(0, 500), //x
     real(0, 500), //y
     real(0, 500), //w
@@ -31,13 +26,41 @@ rl_observe(go_right, object(
     real(-500, 500), //velocity_x
     real(-500, 500) //velocity_y
 )).
+//set(
+//        goomba, koopa, koopa_shell,                                       //enemie
+//        coin, flower, g_mushroom, item, l_mushroom, princess, start, toad,//item
+//        flagpole, question,                                               //misc
+//        block, brick, pipe, rock                                          //obstacle
+//    ),   //name
 //rl_observe(go_right, obj_player_touching(_, _, _, _, _, _, _, _, _, _, _)).
-rl_observe(go_right, path(set(rock))).
-//rl_observe(go_right, enemie(_)).
+rl_observe(go_right, t_path(int(0, 17))).
+rl_observe(go_right, t_enemie(int(0, 17))).
 
 rl_reward(go_right, R) :- reward(R).
 
 rl_terminal(go_right) :- gameover.
+
+
+// Convert int to name
+obj_name(0, block).
+obj_name(1, brick).
+obj_name(2, coin).
+obj_name(3, flagpole).
+obj_name(4, flower).
+obj_name(5, g_mushroom).
+obj_name(6, goomba).
+obj_name(7, item).
+obj_name(8, koopa).
+obj_name(9, koopa_shell).
+obj_name(10, l_mushrrom).
+obj_name(11, mario).
+obj_name(12, pipe).
+obj_name(13, princess).
+obj_name(14, question).
+obj_name(15, rock).
+obj_name(16, star).
+obj_name(17, toad).
+obj_name(_, none).
 
 
 // Define where the player is touching the object
@@ -90,14 +113,16 @@ y_range(_,_,_,_,0, none).
 // Identifying Enemies
 +enemie(N): true <- print("\nNew Enemie: ", N);.
 
-+object(N, X, Y, W, H, VX, VY):
++object(TN, X, Y, W, H, VX, VY):
     gameover &
     player_touching(X, Y, W, H, DX, DY, TPX, TPY) &
     (TPX \== none) & (TPY \== none) &
-    not path(N)
+    not t_path(TN)
     <-
+    ?obj_name(TN, N);
     print("\nENEMY: ",N);
     +enemie(N);
+    +t_enemie(TN);
 .
 
 
@@ -105,15 +130,17 @@ y_range(_,_,_,_,0, none).
 +path(N): true <- print("\nNew Path: ", N);.
 
 // name, x, y, w, h, velocity_x, velocity_y
-+object(N, X, Y, W, H, VX, VY):
++object(TN, X, Y, W, H, VX, VY):
     player_touching(X, Y, W, H, DX, DY, TPX, bottom) &
     (TPX \== none) & (TPY \== none) &
     player(_, PX, PY, PW, PH, PVX, PVY) &
     (PVY == 0) &
     (VX == 0) &
-    not enemie(N)
+    not t_enemie(TN)
     <-
+    ?obj_name(TN, N);
     +path(N);
+    +t_path(TN);
 .
 
 +ready : true <- !start.
