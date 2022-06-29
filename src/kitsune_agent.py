@@ -136,6 +136,7 @@ class KitsuneAgent():
             action = agents[agent_id].inference(np.array(json_data['state'], dtype=json_data['state_type']),
                                           json_data['reward'], json_data['is_terminal'])
         """
+        # For some reason tis need to be a list of list
         result = {'action': [[int(action)]]}
         return jsonify(result)
 

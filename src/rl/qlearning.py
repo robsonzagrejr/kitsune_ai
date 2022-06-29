@@ -45,7 +45,7 @@ class QLearning():
             Action_probabilities = np.ones(num_actions,
                     dtype = float) * epsilon / num_actions
 
-            best_action = np.argmax(Q[state])
+            best_action = np.argmax(self.Q[state])
             Action_probabilities[best_action] += (1.0 - epsilon)
             return Action_probabilities
 
@@ -56,19 +56,19 @@ class QLearning():
         return tuple(
             [
                 tuple(l)
-                for l in state
+                for l in sorted(state)
             ]
         )
-        return np.array(state, dtype=list)
 
     
     def step(self, state, reward, done, is_training=False):
         state = self._handle_state(state)
+        print(state)
         if is_training:
             action = self.train(state, reward, done)
         else:
             # Get best action for this state
-            action = np.argmax(Q[state])
+            action = np.argmax(self.Q[state])
         return action
 
 
