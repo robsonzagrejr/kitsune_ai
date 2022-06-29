@@ -1,38 +1,37 @@
 // Configuring RL soft plans
 rl_algorithm(go_right, qlearning).
 
-rl_parameter(policy, egreedy).
-rl_parameter(alpha, 0.26).
-rl_parameter(gamma, 0.9).
-rl_parameter(epsilon, 0.4).
-rl_parameter(epsilon_decay, 0.9999).
-rl_parameter(epsilon_min, 0).
+//rl_parameter(policy, egreedy).
+//rl_parameter(alpha, 0.26).
+//rl_parameter(gamma, 0.9).
+//rl_parameter(epsilon, 0.4).
+//rl_parameter(epsilon_decay, 0.9999).
+//rl_parameter(epsilon_min, 0).
 
-//rl_observe(go_right, player(
-//    int(0, 17),
-//    int(0, 500), //x
-//    int(0, 500), //y
-//    int(0, 500), //w
-//    int(0, 500), //h
-//    int(-500, 500), //velocity_x
-//    int(-500, 500) //velocity_y
-//)).
-rl_observe(go_right, [
-    object(
-        int(0, 17),
-        int(0, 500), //x
-        int(0, 500), //y
-        int(0, 500), //w
-        int(0, 500), //h
-        int(-500, 500), //velocity_x
-        int(-500, 500) //velocity_y
-    ),
-    t_path(int(0,17))
-    //t_enemie(int(0,17))
-]).
+rl_observe(go_right,
+player(
+    int(0, 17),
+    int(0, 500), //x
+    int(0, 500), //y
+    int(0, 500), //w
+    int(0, 500), //h
+    int(-500, 500), //velocity_x
+    int(-500, 500) //velocity_y
+)).
+rl_observe(go_right,
+object(
+    int(0, 17),
+    int(0, 500), //x
+    int(0, 500), //y
+    int(0, 500), //w
+    int(0, 500), //h
+    int(-500, 500), //velocity_x
+    int(-500, 500) //velocity_y
+)
+).
 //rl_observe(go_right, obj_player_touching(_, _, _, _, _, _, _, _, _, _, _)).
-//rl_observe(go_right, t_path(int(0, 17))).
-//rl_observe(go_right, t_enemie(int(0, 17))).
+rl_observe(go_right, t_path(int(0, 17))).
+rl_observe(go_right, t_enemie(int(0, 17))).
 
 rl_reward(go_right, R) :- reward(R).
 
