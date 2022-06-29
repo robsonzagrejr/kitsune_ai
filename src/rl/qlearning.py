@@ -14,8 +14,10 @@ class QLearning():
         self.epsilon = epsilon
         self.discount_factor = discount_factor
 
-        self._reset_state = base_state.copy()
-        self._last_state = base_state
+        #self._reset_state = init_state.copy()
+        #self._last_state = init_state
+        self._reset_state = ()
+        self._last_state = ()
         self._last_reward = None
         self._last_done = None
 
@@ -49,10 +51,21 @@ class QLearning():
 
         return policyFunction
 
+
+    def _handle_state(self, state):
+        return tuple(
+            [
+                tuple(l)
+                for l in state
+            ]
+        )
+        return np.array(state, dtype=list)
+
     
     def step(self, state, reward, done, is_training=False):
+        state = self._handle_state(state)
         if is_training:
-            self.train(state, reward, done)
+            action = self.train(state, reward, done)
         else:
             # Get best action for this state
             action = np.argmax(Q[state])
@@ -72,10 +85,10 @@ class QLearning():
         )
 
         # TD Update
-        best_next_action = np.argmax(Q[state])
-        td_target = reward + discount_factor * Q[state][best_next_action]
-        td_delta = td_target - Q[self._last_state][action]
-        Q[self._last_state][action] += alpha * td_delta
+        best_next_action = np.argmax(self.Q[state])
+        td_target = reward + self.discount_factor * self.Q[state][best_next_action]
+        td_delta = td_target - self.Q[self._last_state][action]
+        self.Q[self._last_state][action] += self.alpha * td_delta
 
         if done:
             self._last_state = self._reset_state

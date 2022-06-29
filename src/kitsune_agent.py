@@ -6,6 +6,7 @@ from flask import Flask, jsonify, request
 import logging
 from threading import Thread
 import time
+import json
 
 from src.rl.qlearning import QLearning
 
@@ -98,38 +99,43 @@ class KitsuneAgent():
 
     def route_agent_info(self, agent_id:str):
         json_data = request.get_json(force=True)
-        print("##################################")
-        print("""a_shape {}, a_type {}, a_min {}, a_max {}, o_shape {}, o_type {}, init_state {},
-        agent_type {}, parameters {}""".format(json_data['a_shape'], json_data['a_type'],
-        json_data['a_min'], json_data['a_max'], json_data['o_shape'], json_data['o_type'],
-        json_data['init_state'], json_data['agent_type'], json_data['parameters']))
-        print("##################################")
+        actions = list(range(json_data['a_min'][0], json_data['a_max'][0]+1))
+        parameters = json_data['parameters']
 
-    
-        return {}
+        print("-------Agent-------")
+        print(f"type: {json_data['agent_type']}")
+        print(f"actions: [{min(actions)}, {max(actions)}]")
+        print(f"parameters: \n{json.dumps(parameters, indent=4)}")
+        print("-------------------")
+
         if json_data['agent_type'] == "qlearning":
-            self.agent = QLearning()
-            agent = DqnAgent(json_data['a_max'][0] + 1, json_data['o_shape'][0], json_data['parameters'], agent_id)
-        agents[agent_id] = agent
+            self.agent = QLearning(
+                self._reset_state,
+                len(actions),
+                **parameters
+            )
+
         return {}
 
 
     def route_agent_action(self, agent_id:str, action_type:str):
+        if self.agent == None:
+            raise(ValueError("Agent not initialize"))
         json_data = request.get_json(force=True)
-        print(json_data['state'])
-        print('---')
-        return jsonify({'action': [[1]]})
-        json_data = request.get_json(force=True)
-        #print("##################################")
-        #print(json_data)
-        if action_type == "next_train_action":
-            action = agents[agent_id].epoch_step(np.array(json_data['state'], dtype=json_data['state_type']),
-                                      json_data['reward'], json_data['is_terminal'])
+        # Each model need to handle how the data in
+        #state will be set
+        state = json_data['state']
+        reward = json_data['reward'] 
+        done = json_data['is_terminal']
+        is_training = action_type == 'next_train_action'
+
+        action = self.agent.step(state, reward, done, is_training)
+
+        """
         if action_type == "next_best_action":
             action = agents[agent_id].inference(np.array(json_data['state'], dtype=json_data['state_type']),
                                           json_data['reward'], json_data['is_terminal'])
-        result = {'action': [int(action)]}
-        #print("##################################")
-        #print(result)
+        """
+        result = {'action': [[int(action)]]}
         return jsonify(result)
 
