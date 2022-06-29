@@ -1,13 +1,15 @@
+import os
 import numpy as np
-import pandas as pd
+import pickle
   
 from collections import defaultdict
 
 
 class QLearning():
-
+    result_save = {}
     def __init__(self, init_state, n_actions, max_episodes=200, discount_factor = 1.0,
                             alpha = 0.6, epsilon = 0.1):
+        self.file_path = "models/mario_qlearning.pkl"
         self.max_episodes = max_episodes
         self.n_actions = n_actions
         self.alpha = alpha
@@ -18,11 +20,18 @@ class QLearning():
         #self._last_state = init_state
         self._reset_state = ()
         self._last_state = ()
-        self._last_reward = None
-        self._last_done = None
+        self.epoch_reward = None
+
 
         #FIXME initial values
-        self.Q = defaultdict(lambda: np.zeros(self.n_actions))
+        self.Q = None
+        if os.path.exists(self.file_path):
+            print("Loading Q from saved file")
+            self.load()
+        if self.Q is None:
+            print("Initialize Q with default values")
+            self.Q = defaultdict(lambda: np.zeros(self.n_actions))
+        self.save()
         #FIXME best policy?
         self.policy = self.createEpsilonGreedyPolicy()
 
@@ -63,7 +72,6 @@ class QLearning():
     
     def step(self, state, reward, done, is_training=False):
         state = self._handle_state(state)
-        print(state)
         if is_training:
             action = self.train(state, reward, done)
         else:
@@ -92,59 +100,28 @@ class QLearning():
 
         if done:
             self._last_state = self._reset_state
+            self.save()
         else:
             self._last_state = state
 
         return action
 
 
-    def qLearning(env, num_episodes, discount_factor = 1.0,
-                                alpha = 0.6, epsilon = 0.1):
-        """
-        Q-Learning algorithm: Off-policy TD control.
-        Finds the optimal greedy policy while improving
-        following an epsilon-greedy policy"""
-
-        # Action value function
-        # A nested dictionary that maps
-        # state -> (action -> action-value).
-        Q = defaultdict(lambda: np.zeros(env.action_space.n))
-
-        # Create an epsilon greedy policy function
-        # appropriately for environment action space
-        policy = createEpsilonGreedyPolicy(Q, epsilon, env.action_space.n)
-
-        # For every episode
-        for ith_episode in range(num_episodes):
-
-            # Reset the environment and pick the first action
-            state = env.reset()
-
-            #While true
-            for t in itertools.count():
-
-                # get probabilities of all actions from current state
-                action_probabilities = policy(state)
-
-                # choose action according to
-                # the probability distribution
-                action = np.random.choice(np.arange(
-                          len(action_probabilities)),
-                           p = action_probabilities)
-
-                # take action and get reward, transit to next state
-                next_state, reward, done, _ = env.step(action)
+    def save(self):
+        print("Saving learning...")
+        #FIXME create new file
+        result_save = {
+            "Q": self.Q
+        }
+        with open(self.file_path, 'wb+') as f:
+            pickle.dump(self.result_save, f)
 
 
-                # TD Update
-                best_next_action = np.argmax(Q[next_state])
-                td_target = reward + discount_factor * Q[next_state][best_next_action]
-                td_delta = td_target - Q[state][action]
-                Q[state][action] += alpha * td_delta
-
-                # done is True if episode terminated
-                if done:
-                    break
-
-                state = next_state
+    def load(self):
+        print("Loading learning...")
+        with open(self.file_path, 'rb+') as f:
+            if f.tell():
+                print("READ")
+                result_saved = pickle.load(f)
+                self.Q = result_saved['Q']
 
