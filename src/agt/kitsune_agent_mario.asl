@@ -129,7 +129,7 @@ y_range(_,_,_,_,0, none).
 // name, x, y, w, h, velocity_x, velocity_y
 +object(TN, X, Y, W, H, VX, VY):
     player_touching(X, Y, W, H, DX, DY, TPX, bottom) &
-    (TPX \== none) & (TPY \== none) &
+    (TPX \== none) &
     player(_, PX, PY, PW, PH, PVX, PVY) &
     (PVY == 0) &
     (VX == 0) &

@@ -6,8 +6,7 @@ from collections import defaultdict
 
 
 class QLearning():
-    result_save = {}
-    def __init__(self, init_state, n_actions, max_episodes=200, discount_factor = 1.0,
+    def __init__(self, init_state, n_actions, max_episodes=200, discount_factor = 1,
                             alpha = 0.6, epsilon = 0.1):
         self.file_path = "models/mario_qlearning.pkl"
         self.max_episodes = max_episodes
@@ -30,16 +29,17 @@ class QLearning():
             self.load()
         if self.Q is None:
             print("Initialize Q with default values")
-            self.Q = defaultdict(lambda: np.zeros(self.n_actions))
-        self.save()
+            self.Q = defaultdict(self._init_q)
+            self.save()
         #FIXME best policy?
-        self.policy = self.createEpsilonGreedyPolicy()
+        #self.policy = self.createEpsilonGreedyPolicy()
 
 
-    def createEpsilonGreedyPolicy(self):
-        Q = self.Q
-        epsilon = self.epsilon
-        num_actions = self.n_actions
+    def _init_q(self):
+        return np.zeros(self.n_actions)
+
+
+    def policy(self, state):
         """
         Creates an epsilon-greedy policy based
         on a given Q-function and epsilon.
@@ -49,16 +49,12 @@ class QLearning():
         for each action in the form of a numpy array
         of length of the action space(set of possible actions).
         """
-        def policyFunction(state):
+        action_probabilities = np.ones(self.n_actions,
+                dtype = float) * self.epsilon / self.n_actions
 
-            Action_probabilities = np.ones(num_actions,
-                    dtype = float) * epsilon / num_actions
-
-            best_action = np.argmax(self.Q[state])
-            Action_probabilities[best_action] += (1.0 - epsilon)
-            return Action_probabilities
-
-        return policyFunction
+        best_action = np.argmax(self.Q[state])
+        action_probabilities[best_action] += (1.0 - self.epsilon)
+        return action_probabilities
 
 
     def _handle_state(self, state):
@@ -110,18 +106,17 @@ class QLearning():
     def save(self):
         print("Saving learning...")
         #FIXME create new file
-        result_save = {
-            "Q": self.Q
-        }
         with open(self.file_path, 'wb+') as f:
-            pickle.dump(self.result_save, f)
+            result_save = {
+                "Q": self.Q
+            }
+            pickle.dump(result_save, f)
 
 
     def load(self):
         print("Loading learning...")
         with open(self.file_path, 'rb+') as f:
-            if f.tell():
-                print("READ")
-                result_saved = pickle.load(f)
-                self.Q = result_saved['Q']
+            print("Loading")
+            result_saved = pickle.load(f)
+            self.Q = result_saved['Q']
 
