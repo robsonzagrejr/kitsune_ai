@@ -109,7 +109,6 @@ class KitsuneAgent():
 
         if json_data['agent_type'] == "qlearning":
             self.agent = QLearning(
-                self._reset_state,
                 len(actions),
                 **parameters
             )
