@@ -102,11 +102,10 @@ class KitsuneAgent():
         actions = list(range(json_data['a_min'][0], json_data['a_max'][0]+1))
         parameters = json_data['parameters']
 
-        print("-------Agent-------")
+        print("Agent".center(30,"-"))
         print(f"type: {json_data['agent_type']}")
         print(f"actions: [{min(actions)}, {max(actions)}]")
         print(f"parameters: \n{json.dumps(parameters, indent=4)}")
-        print("-------------------")
 
         if json_data['agent_type'] == "qlearning":
             self.agent = QLearning(
@@ -114,6 +113,7 @@ class KitsuneAgent():
                 len(actions),
                 **parameters
             )
+        print("Successfully Loaded".center(30,"-"))
 
         return {}
 
