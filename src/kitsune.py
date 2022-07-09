@@ -18,8 +18,8 @@ from src.utils import (
 
 class Kitsune():
 
-    def __init__(self, rom, sprites_paths, env_actions, is_training):
-        self._window = pyglet.window.Window(width=screen['w'],height=screen['h'])
+    def __init__(self, rom, sprites_paths, env_actions, is_training, show_graphic=True):
+        self._window = pyglet.window.Window(width=screen['w'],height=screen['h'], visible=show_graphic)
         self._is_training = is_training
 
         self.env   = KitsuneEnv(rom, env_actions, self._window, self._is_training)
@@ -36,8 +36,8 @@ class Kitsune():
         }
 
         self._window.event(self.on_draw)
-
-        #self.play()
+        if show_graphic:
+            self.play()
 
 
     def get_kitsune_image(self):
