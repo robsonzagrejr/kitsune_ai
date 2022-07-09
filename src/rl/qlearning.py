@@ -1,45 +1,46 @@
 import os
 import numpy as np
 import pickle
+import copy
+from functools import partial
   
 from collections import defaultdict
 
 
 class QLearning():
     result_save = {}
-    def __init__(self, init_state, n_actions, max_episodes=200, discount_factor = 1.0,
-                            alpha = 0.6, epsilon = 0.1):
-        self.file_path = "models/mario_qlearning.pkl"
-        self.max_episodes = max_episodes
+    def __init__(self, n_actions, discount_factor = 0.6, alpha = 0.6, epsilon = 0.1):
+        self.file_path = "models/mario_qlearning"
         self.n_actions = n_actions
         self.alpha = alpha
         self.epsilon = epsilon
         self.discount_factor = discount_factor
 
-        #self._reset_state = init_state.copy()
-        #self._last_state = init_state
         self._reset_state = ()
         self._last_state = ()
-        self.epoch_reward = None
+        self.load_saved = True
+        self._save_in_each_epoch = 1
+        self.epoch = 0
 
 
         #FIXME initial values
         self.Q = None
-        if os.path.exists(self.file_path):
-            print("Loading Q from saved file")
+        if self.load_saved and os.path.exists(self.file_path+".pkl"):
             self.load()
+
         if self.Q is None:
-            print("Initialize Q with default values")
-            self.Q = defaultdict(lambda: np.zeros(self.n_actions))
-        self.save()
+            self.Q = defaultdict(partial(np.zeros, n_actions))
+
+        self.epoch_metrics = {
+            self.epoch: {
+                "epoch": self.epoch,
+                "acc_reward": 0,
+            }
+        }
+
+
+    def policy(self, state):
         #FIXME best policy?
-        self.policy = self.createEpsilonGreedyPolicy()
-
-
-    def createEpsilonGreedyPolicy(self):
-        Q = self.Q
-        epsilon = self.epsilon
-        num_actions = self.n_actions
         """
         Creates an epsilon-greedy policy based
         on a given Q-function and epsilon.
@@ -49,22 +50,24 @@ class QLearning():
         for each action in the form of a numpy array
         of length of the action space(set of possible actions).
         """
-        def policyFunction(state):
-
-            Action_probabilities = np.ones(num_actions,
-                    dtype = float) * epsilon / num_actions
-
-            best_action = np.argmax(self.Q[state])
-            Action_probabilities[best_action] += (1.0 - epsilon)
-            return Action_probabilities
-
-        return policyFunction
+        action_probabilities = (
+            np.ones(
+                self.n_actions,
+                dtype = float
+            )
+            * (self.epsilon / self.n_actions)
+        )
+        best_action = np.argmax(self.Q[state])
+        action_probabilities[best_action] += (1.0 - self.epsilon)
+        return action_probabilities
 
 
     def _handle_state(self, state):
         return tuple(
             [
-                tuple(l)
+                #Force int value to get less memory sinze we are talking
+                # a range of NES screen
+                tuple([np.int16(x) if x is not None else -999 for x in l])
                 for l in sorted(state)
             ]
         )
@@ -98,30 +101,54 @@ class QLearning():
         td_delta = td_target - self.Q[self._last_state][action]
         self.Q[self._last_state][action] += self.alpha * td_delta
 
+        # Update metrics
+        self.epoch_metrics[self.epoch]["acc_reward"] += reward
+
         if done:
             self._last_state = self._reset_state
-            self.save()
+
+            if self.epoch % self._save_in_each_epoch == 0:
+                self.save(self.epoch, self.epoch_metrics)
+
+            self.epoch += 1
+            #Reset epoch metrics
+            self.epoch_metrics[self.epoch] = {
+                "epoch": self.epoch,
+                "acc_reward": 0,
+            }
+
         else:
             self._last_state = state
 
         return action
 
 
-    def save(self):
-        print("Saving learning...")
-        #FIXME create new file
+    def save(self, epoch, epoch_metrics):
+        print(f"Saving learning for epoch {epoch}")
         result_save = {
-            "Q": self.Q
+            "Q": copy.deepcopy(self.Q),
+            "metrics": epoch_metrics,
+            "epoch": epoch
         }
-        with open(self.file_path, 'wb+') as f:
-            pickle.dump(self.result_save, f)
+        epoch_file_name = f"{self.file_path}_epoch_{epoch}.pkl"
+
+        # Save Base
+        with open(f"{self.file_path}.pkl", 'wb') as f:
+            pickle.dump(result_save, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        # Save Epoch
+        with open(epoch_file_name, 'wb') as f:
+            pickle.dump(result_save, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
     def load(self):
         print("Loading learning...")
-        with open(self.file_path, 'rb+') as f:
-            if f.tell():
-                print("READ")
-                result_saved = pickle.load(f)
-                self.Q = result_saved['Q']
+        with open(f"{self.file_path}.pkl", 'rb') as f:
+            result_saved = pickle.load(f)
+            self.Q = result_saved.get('Q', None)
+            metrics = result_saved.get('metrics', {})
+            if metrics:
+                self.epoch_metrics = metrics
+            self.epoch = result_saved.get("epoch", -1) + 1
+            print(f"Learning from Epoch {self.epoch -1} Loaded")
 

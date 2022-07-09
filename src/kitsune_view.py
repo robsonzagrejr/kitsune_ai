@@ -69,12 +69,11 @@ class KitsuneView():
         self.frame_obj = None
         self.pool = multiprocessing.Pool(4)
 
-        table_border = "++++++++++++++++++++++++++++++++"
+        table_border = "+"*26
         print(table_border)
         for i in range(len(sprite_names)):
             name = sprite_names[i]
-            spaces = " "*(len(table_border)-len(name)-len(str(i))-2-4) 
-            print(f"| {name}-> {i}{spaces}|")
+            print(f"| {name.ljust(15,' ')}-> {str(i).ljust(5, ' ')}|")
         print(table_border)
 
 
