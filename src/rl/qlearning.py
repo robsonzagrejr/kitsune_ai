@@ -133,11 +133,11 @@ class QLearning():
         epoch_file_name = f"{self.file_path}_epoch_{epoch}.pkl"
 
         # Save Base
-        with open(f"{self.file_path}.pkl", 'wb') as f:
+        with open(f"{self.file_path}.pkl", 'wb+') as f:
             pickle.dump(result_save, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         # Save Epoch
-        with open(epoch_file_name, 'wb') as f:
+        with open(epoch_file_name, 'wb+') as f:
             pickle.dump(result_save, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 

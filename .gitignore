@@ -4,7 +4,8 @@ __pycache__/
 *$py.class
 
 # Models
-models/
+models/*.pkl*.pkl*.pkl*.pkl*.pkl
+e_r_r_o_r.txt
 
 # C extensions
 *.so

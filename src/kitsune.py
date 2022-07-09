@@ -37,7 +37,7 @@ class Kitsune():
 
         self._window.event(self.on_draw)
 
-        self.play()
+        #self.play()
 
 
     def get_kitsune_image(self):
