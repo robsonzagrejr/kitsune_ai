@@ -13,7 +13,6 @@ java.lang.InterruptedException
 	at java.logging/java.util.logging.Logger.log(Logger.java:1029)
 	at java.logging/java.util.logging.Logger.warning(Logger.java:1789)
 	at jaca.CAgentArch.act(CAgentArch.java:233)
-	at jason.architecture.AgArch.act(AgArch.java:166)
 	at jason.asSemantics.TransitionSystem.act(TransitionSystem.java:1537)
 	at jason.infra.centralised.CentralisedAgArch.act(CentralisedAgArch.java:206)
 	at jason.infra.centralised.CentralisedAgArch.reasoningCycle(CentralisedAgArch.java:215)

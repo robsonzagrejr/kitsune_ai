@@ -131,8 +131,8 @@ class KitsuneEnv():
         return state, reward, done
 
 
-    def step_info(self, objects, state):
-        return self._env.step_info(objects, state)
+    def step_info(self, *params):
+        return self._env.step_info(*params)
 
 
     def _run_game(self, dt):

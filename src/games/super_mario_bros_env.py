@@ -454,9 +454,12 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
         return state, step_reward, done, _something
 
 
-    def step_info(self, objects, state):
+    def step_info(self, objects, state, reward):
         metric_objects = self._calc_metrics(objects)
         self._metric_objects_cache = metric_objects
+
+        # Add a x reward the scenary speed to incentivate the walk
+        reward[0] += -self._speed_cache.get('scenary', [0])[0]
 
         state = [
             #type, name, x, y, w, h, vx, vy
@@ -465,7 +468,7 @@ class KitsuneSuperMarioBrosEnv(SuperMarioBrosEnv):
             for pt in obj.get('pts', [])
         ]
 
-        return state
+        return state, reward
 
     
     def _calc_metrics(self, objects):
