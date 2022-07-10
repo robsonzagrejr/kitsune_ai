@@ -1,3 +1,6 @@
+"""
+https://towardsdatascience.com/q-learning-and-sasar-with-python-3775f86bd178
+"""
 import os
 import numpy as np
 import copy
@@ -8,10 +11,10 @@ from collections import defaultdict
 import src.rl.utils as utils
 
 
-class QLearning():
+class Sarsa():
 
-    def __init__(self, n_actions, gamma= 0.75, alpha = 1, epsilon = 0.1):
-        self.file_path = "models/mario_qlearning"
+    def __init__(self, n_actions, gamma = 0.95, alpha = 0.05, epsilon = 0.9):
+        self.file_path = "models/mario_sarsa"
         self.n_actions = n_actions
         self.alpha = alpha
         self.epsilon = epsilon
@@ -51,7 +54,7 @@ class QLearning():
             ]
         )
 
-    
+
     def step(self, state, reward, done, is_training=False):
         state = self._handle_state(state)
         if is_training:
@@ -76,10 +79,10 @@ class QLearning():
         # reward is always based in last state and last action
 
         # Algorithm based on Bellman equation
-        best_next_action = np.argmax(self.Q[state])
+        next_action = self.policy(state)
         temporal_difference_target = (
-            reward + self.gamma 
-            * self.Q[state][best_next_action]
+            reward + self.gamma
+            * self.Q[state][next_action]
             - self.Q[self._last_state][self._last_action]
         )
         self.Q[self._last_state][self._last_action] += (
@@ -88,7 +91,7 @@ class QLearning():
         )
 
         # Chooseing action based in policy derived from Q
-        action = self.policy(state)
+        action = next_action
 
         # Update last values
         self._last_state = copy.deepcopy(state)
@@ -100,7 +103,7 @@ class QLearning():
 
         if done:
             self._last_state = self._reset_state
-            self._last_action = 0
+            self._last_action = self.policy(self._last_state)
 
             if self.epoch % self._save_in_each_epoch == 0:
                 self.save()
