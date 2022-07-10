@@ -1,10 +1,10 @@
 import os
 import numpy as np
-import pickle
-import copy
 from functools import partial
   
 from collections import defaultdict
+
+import src.rl.utils as utils
 
 
 class QLearning():
@@ -37,6 +37,9 @@ class QLearning():
                 "acc_reward": 0,
             }
         }
+
+        self.save()
+
 
 
     def policy(self, state):
@@ -123,32 +126,20 @@ class QLearning():
         return action
 
 
-    def save(self, epoch, epoch_metrics):
-        print(f"Saving learning for epoch {epoch}")
+    def save(self):
         result_save = {
-            "Q": copy.deepcopy(self.Q),
-            "metrics": epoch_metrics,
-            "epoch": epoch
+            "Q": self.Q,
+            "metrics": self.epoch_metrics,
+            "epoch": self.epoch
         }
-        epoch_file_name = f"{self.file_path}_epoch_{epoch}.pkl"
-
-        # Save Base
-        with open(f"{self.file_path}.pkl", 'wb+') as f:
-            pickle.dump(result_save, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # Save Epoch
-        with open(epoch_file_name, 'wb+') as f:
-            pickle.dump(result_save, f, protocol=pickle.HIGHEST_PROTOCOL)
+        utils.save(result_save, self.file_path)
 
 
     def load(self):
-        print("Loading learning...")
-        with open(f"{self.file_path}.pkl", 'rb') as f:
-            result_saved = pickle.load(f)
-            self.Q = result_saved.get('Q', None)
-            metrics = result_saved.get('metrics', {})
-            if metrics:
-                self.epoch_metrics = metrics
-            self.epoch = result_saved.get("epoch", -1) + 1
-            print(f"Learning from Epoch {self.epoch -1} Loaded")
+        result_load = utils.load(self.file_path)
+        self.Q = result_load.get('Q', None)
+        metrics = result_load.get('metrics', {})
+        if metrics:
+            self.epoch_metrics = metrics
+        self.epoch = result_load.get("epoch", -1) + 1
 
