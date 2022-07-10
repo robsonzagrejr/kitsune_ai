@@ -37,6 +37,7 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
 	
 	protected abstract String getMethod();
 	private String goal;
+	protected String algorithm;
 	
 	private List<Observation> observations;
 	private List<String> observations_names;
@@ -46,10 +47,16 @@ public abstract class TensorFlowAgent implements AlgorithmRL{
 	private Client client = ClientBuilder.newClient();
 	
 	private double preActionReward = 0;
-	
+
 	public TensorFlowAgent(String goal) {
 		super();
 		this.goal = goal;
+	}
+
+	public TensorFlowAgent(String goal, String algorithm) {
+		super();
+		this.goal = goal;
+        this.algorithm = algorithm;
 	}
 
 	@Override
