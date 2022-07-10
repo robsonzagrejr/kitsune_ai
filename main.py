@@ -13,7 +13,7 @@ def main():
         sprites_paths = sprites_paths,
         env_actions = actions,
         is_training = True,
-        show_graphic = False
+        show_graphic = True
     )
 
     kitsune.start()

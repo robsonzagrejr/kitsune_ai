@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import copy
 from functools import partial
   
 from collections import defaultdict
@@ -9,15 +10,16 @@ import src.rl.utils as utils
 
 class QLearning():
     result_save = {}
-    def __init__(self, n_actions, discount_factor = 0.6, alpha = 0.6, epsilon = 0.1):
+    def __init__(self, n_actions, gamma=0.75, alpha = 1, epsilon = 0.1):
         self.file_path = "models/mario_qlearning"
         self.n_actions = n_actions
         self.alpha = alpha
         self.epsilon = epsilon
-        self.discount_factor = discount_factor
+        self.gamma = gamma #discount factor
 
         self._reset_state = ()
         self._last_state = ()
+        self._last_action = 0
         self.load_saved = True
         self._save_in_each_epoch = 1
         self.epoch = 0
@@ -37,32 +39,6 @@ class QLearning():
                 "acc_reward": 0,
             }
         }
-
-        self.save()
-
-
-
-    def policy(self, state):
-        #FIXME best policy?
-        """
-        Creates an epsilon-greedy policy based
-        on a given Q-function and epsilon.
-
-        Returns a function that takes the state
-        as an input and returns the probabilities
-        for each action in the form of a numpy array
-        of length of the action space(set of possible actions).
-        """
-        action_probabilities = (
-            np.ones(
-                self.n_actions,
-                dtype = float
-            )
-            * (self.epsilon / self.n_actions)
-        )
-        best_action = np.argmax(self.Q[state])
-        action_probabilities[best_action] += (1.0 - self.epsilon)
-        return action_probabilities
 
 
     def _handle_state(self, state):
@@ -86,32 +62,48 @@ class QLearning():
         return action
 
 
-    def train(self, state, reward, done):
-        #state here is las_action
-        # get probabilities of all actions from current state
-        action_probabilities = self.policy(self._last_state)
+    def policy(self, state):
+        if np.random.uniform(0, 1) < self.epsilon:
+            # Random choise
+            action = np.random.randint(0, self.n_actions)
+        else:
+            # Best action
+            action = np.argmax(self.Q[state])
+        return action
 
-        # choose action according to
-        # the probability distribution
-        action = np.random.choice(
-            np.arange(len(action_probabilities)),
-            p = action_probabilities
+
+    def train(self, state, reward, done):
+        # reward is always based in last state and last action
+
+        # Algorithm based on Bellman equation
+        best_next_action = np.argmax(self.Q[state])
+        temporal_difference_target = (
+            reward + self.gamma 
+            * self.Q[state][best_next_action]
+            - self.Q[self._last_state][self._last_action]
+        )
+        self.Q[self._last_state][self._last_action] += (
+            self.alpha
+            * temporal_difference_target
         )
 
-        # TD Update
-        best_next_action = np.argmax(self.Q[state])
-        td_target = reward + self.discount_factor * self.Q[state][best_next_action]
-        td_delta = td_target - self.Q[self._last_state][action]
-        self.Q[self._last_state][action] += self.alpha * td_delta
+        # Chooseing action based in policy derived from Q
+        action = self.policy(state)
+
+        # Update last values
+        self._last_state = copy.deepcopy(state)
+        self._last_action = action
+
 
         # Update metrics
         self.epoch_metrics[self.epoch]["acc_reward"] += reward
 
         if done:
             self._last_state = self._reset_state
+            self._last_action = 0
 
             if self.epoch % self._save_in_each_epoch == 0:
-                self.save(self.epoch, self.epoch_metrics)
+                self.save()
 
             self.epoch += 1
             #Reset epoch metrics
@@ -120,8 +112,8 @@ class QLearning():
                 "acc_reward": 0,
             }
 
-        else:
-            self._last_state = state
+            # Decreassing alpha
+            self.alpha = self.alpha*0.95
 
         return action
 

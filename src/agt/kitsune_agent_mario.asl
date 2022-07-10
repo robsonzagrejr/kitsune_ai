@@ -108,6 +108,7 @@ y_range(_,_,_,_,0, none).
 
 
 // Identifying Enemies
++t_enemie(TN): true <- ?obj_name(TN, N); +enemie(N).
 +enemie(N): true <- print("\nNew Enemie: ", N);.
 
 +object(TN, X, Y, W, H, VX, VY):
@@ -118,12 +119,12 @@ y_range(_,_,_,_,0, none).
     <-
     ?obj_name(TN, N);
     print("\nENEMY: ",N);
-    +enemie(N);
     +t_enemie(TN);
 .
 
 
 // Identifying Paths
++t_path(TN): true <- ?obj_name(TN, N); +path(N).
 +path(N): true <- print("\nNew Path: ", N);.
 
 // name, x, y, w, h, velocity_x, velocity_y
@@ -135,12 +136,17 @@ y_range(_,_,_,_,0, none).
     (VX == 0) &
     not t_enemie(TN)
     <-
-    ?obj_name(TN, N);
-    +path(N);
     +t_path(TN);
 .
 
-+ready : true <- !start.
++ready :
+    true
+    <-
+    // Initialize the state with this too observes types
+    +t_enemie(-1);
+    +t_path(-1);
+    !start
+.
 
 +!start : ready <- rl.execute(go_right); !start. //!start in order to continue after the end of the episode
 
