@@ -52,11 +52,12 @@ obj_name(9, koopa_shell).
 obj_name(10, l_mushrrom).
 obj_name(11, mario).
 obj_name(12, pipe).
-obj_name(13, princess).
-obj_name(14, question).
-obj_name(15, rock).
-obj_name(16, star).
-obj_name(17, toad).
+obj_name(13, pipe_top).
+obj_name(14, princess).
+obj_name(15, question).
+obj_name(16, rock).
+obj_name(17, star).
+obj_name(18, toad).
 obj_name(_, none).
 
 
