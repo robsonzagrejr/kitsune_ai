@@ -12,7 +12,7 @@ import jason.asSyntax.Term;
 import jason.bb.DefaultBeliefBase;
 import rl.algorithm.AlgorithmRL;
 import rl.algorithm.Sarsa;
-import rl.algorithm.tf.QLearning;
+import rl.algorithm.tf.PyAlgorithm;
 
 public class BeliefBaseRL extends DefaultBeliefBase {
 
@@ -22,6 +22,7 @@ public class BeliefBaseRL extends DefaultBeliefBase {
 	
 	public static final String SARSA_ID = "sarsa";
 	public static final String QLEARNING_ID = "qlearning";
+	public static final String PYSARSA_ID = "py_sarsa";
 
 	Agent agentReference;
 
@@ -94,7 +95,9 @@ public class BeliefBaseRL extends DefaultBeliefBase {
 				String algorithm = belief.getTerm(1).toString();
 				if(!rl.containsKey(goal)) {
 					if(algorithm.equals(QLEARNING_ID)) {
-						rl.put(goal, new QLearning(goal));
+						rl.put(goal, new PyAlgorithm(goal, QLEARNING_ID));
+					} else if(algorithm.equals(PYSARSA_ID)) {
+						rl.put(goal, new PyAlgorithm(goal, PYSARSA_ID));
 					} else if(algorithm.equals(SARSA_ID)) {
 						rl.put(goal, new Sarsa(goal));
 					} else {

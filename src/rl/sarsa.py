@@ -1,6 +1,3 @@
-"""
-https://towardsdatascience.com/q-learning-and-sasar-with-python-3775f86bd178
-"""
 import os
 import numpy as np
 import copy
@@ -13,12 +10,16 @@ import src.rl.utils as utils
 
 class Sarsa():
 
-    def __init__(self, n_actions, gamma = 0.95, alpha = 0.05, epsilon = 0.9):
+    def __init__(self, n_actions, gamma = 0.95, alpha = 0.05,
+            epsilon = 0.9, epsilon_decay=0.9999, epsilon_min=0):
         self.file_path = "models/mario_sarsa"
-        self.n_actions = n_actions
-        self.alpha = alpha
-        self.epsilon = epsilon
-        self.gamma = gamma #discount factor
+        self.n_actions = int(n_actions)
+        self.gamma = float(gamma) #discount factor
+        self.alpha = float(alpha)
+        self.epsilon = float(epsilon)
+        self.epsilon_decay = float(epsilon_decay)
+        self.epsilon_min = float(epsilon_min)
+
 
         self._reset_state = ()
         self._last_state = ()
@@ -100,6 +101,12 @@ class Sarsa():
 
         # Update metrics
         self.epoch_metrics[self.epoch]["acc_reward"] += reward
+
+        # Update Epsilon
+        self.epsilon = max(
+            self.epsilon*self.epsilon_decay,
+            self.epsilon_min
+        )
 
         if done:
             self._last_state = self._reset_state

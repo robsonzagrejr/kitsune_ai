@@ -9,6 +9,7 @@ import time
 import json
 
 from src.rl.qlearning import QLearning
+from src.rl.sarsa import Sarsa
 
 
 class KitsuneAgent():
@@ -112,6 +113,12 @@ class KitsuneAgent():
                 len(actions),
                 **parameters
             )
+        if json_data['agent_type'] == "py_sarsa":
+            self.agent = Sarsa(
+                len(actions),
+                **parameters
+            )
+
         print("Successfully Loaded".center(30,"-"))
 
         return {}
