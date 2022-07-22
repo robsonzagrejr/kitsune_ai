@@ -99,11 +99,15 @@ class KitsuneAgent():
             #to simulate the human behavior
             for i in range(self.n_response_frame):
                 _ , reward, done = self.env.step(int(action))
+                if done:
+                    break
         else:
             # Make selected action work for next X frames
             #to simulate the human behavior
             for i in range(self.n_response_frame):
                 self.env.action = int(action)
+                if self.env.info.get('done', False):
+                    break
 
         return jsonify(self.result)
 
