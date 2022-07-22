@@ -28,6 +28,7 @@ class KitsuneAgent():
         self._objects = {}
         self._reset_state = self.env.reset_state
         self.info = {}
+        self.n_response_frame = 3
 
         self.agent = None
 
@@ -94,9 +95,15 @@ class KitsuneAgent():
         if int(action) == -1:
             self.env.reset()
         elif self.env.is_training:
-            _ , reward, done = self.env.step(int(action))
+            # Make selected action work for next X frames
+            #to simulate the human behavior
+            for i in range(self.n_response_frame):
+                _ , reward, done = self.env.step(int(action))
         else:
-            self.env.action = int(action)
+            # Make selected action work for next X frames
+            #to simulate the human behavior
+            for i in range(self.n_response_frame):
+                self.env.action = int(action)
 
         return jsonify(self.result)
 
