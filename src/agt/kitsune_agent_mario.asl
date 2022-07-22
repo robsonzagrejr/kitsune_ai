@@ -1,11 +1,11 @@
 // Configuring RL soft plans
-rl_algorithm(go_right, py_sarsa).
+rl_algorithm(go_right, natural_evolution).
 
-rl_parameter(alpha, 0.01).
-rl_parameter(gamma, 0.3).
-rl_parameter(epsilon, 0.5).
-rl_parameter(epsilon_decay, 0.999).
-rl_parameter(epsilon_min, 0.05).
+//rl_parameter(alpha, 0.01).
+//rl_parameter(gamma, 0.3).
+//rl_parameter(epsilon, 0.5).
+//rl_parameter(epsilon_decay, 0.999).
+//rl_parameter(epsilon_min, 0.05).
 
 rl_observe(go_right,
 player(
@@ -18,8 +18,9 @@ player(
     int(-500, 500) //velocity_y
 )).
 rl_observe(go_right,
-object(
-    int(0, 17),
+typed_object(
+    int(0, 17),  //type
+    int(0, 17),  //name
     int(0, 500), //x
     int(0, 500), //y
     int(0, 500), //w
@@ -28,8 +29,6 @@ object(
     int(-500, 500) //velocity_y
 )
 ).
-rl_observe(go_right, t_path(int(0, 17))).
-rl_observe(go_right, t_enemie(int(0, 17))).
 
 rl_reward(go_right, R) :- reward(R).
 
@@ -148,13 +147,42 @@ y_range(_,_,_,_,0, none).
     +t_path(TN);
 .
 
+
+// Create typed object
+
+// enemie type
++object(TN, X, Y, W, H, VX, VY):
+    t_enemie(TN)
+    <-
+    +typed_object(1, TN, X, Y, W, H, VX, VY);
+.
+
+// path type
++object(TN, X, Y, W, H, VX, VY):
+    t_path(TN)
+    <-
+    +typed_object(2, TN, X, Y, W, H, VX, VY);
+.
+
+// default typed object
++object(TN, X, Y, W, H, VX, VY):
+    true
+    <-
+    +typed_object(-1, TN, X, Y, W, H, VX, VY);
+.
+
+// remove typed object
+-object(TN, X, Y, W, H, VX, VY):
+    true
+    <-
+    -typed_object(_, TN, X, Y, W, H, VX, VY);
+.
+
+
 +ready :
     true
     <-
-    // Initialize the state with this too observes types
-    +t_enemie(-1);
-    +t_path(-1);
-    !start
+    !start;
 .
 
 +!start :
@@ -168,7 +196,7 @@ y_range(_,_,_,_,0, none).
 @action1[rl_goal(go_right), rl_param(direction(set(
     noop, right, right_a, right_b, right_a_b,
     left, left_a, left_b, left_a_b, 
-    down, up, a, b
+    down, up, a, b, reset
 )))]
 +!move(Direction) <- move(Direction).
 

@@ -66,6 +66,9 @@ public class KitsuneEnv extends Artifact{
             case "b":
                 info = kitsune_env.step(12);
                 break;
+            case "reset":
+                info = kitsune_env.step(-1);
+                break;
             default:
                 info =  kitsune_env.step(0);
                 break;

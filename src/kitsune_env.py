@@ -118,10 +118,7 @@ class KitsuneEnv():
 
         # Reseting values and env
         if done:
-            _ = self._env.reset()
-            self.n_step = 0
-            self.episode += 1
-            self.reward = 0
+            self.reset()
 
         self.info = {
             'state': state,
@@ -133,6 +130,13 @@ class KitsuneEnv():
 
     def step_info(self, objects, state):
         return self._env.step_info(objects, state)
+
+
+    def reset(self):
+        self._env.reset()
+        self.n_step = 0
+        self.episode += 1
+        self.reward = 0
 
 
     def _run_game(self, dt):
