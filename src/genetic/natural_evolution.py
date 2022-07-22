@@ -16,6 +16,8 @@ class NaturalEvolution():
         self.generation = 0
         self.specie = 0
         self.population_size = population_size
+        self.mutate_stdev = 0.5
+        self.mutate_decay = 0.9
 
         if holdout == 'sqrt':
             self.holdout = max(1, int(np.sqrt(population_size)))
@@ -129,8 +131,11 @@ class NaturalEvolution():
                 parent_2_idx = min(self.population_size - 1, int(np.random.exponential(self.holdout)))
             else:
                 parent_2_idx = parent_1_idx
-            offspring = order_population[parent_1_idx].mate(order_population[parent_2_idx])
+            offspring = order_population[parent_1_idx].mate(order_population[parent_2_idx], self.mutate_stdev)
             new_population.append(offspring)
+
+        # Decreasing mutation stdev
+        self.mutate_stdev *= self.mutate_decay
 
         # Ensure best organism survives
         new_population[-1] = order_population[0]
@@ -199,7 +204,7 @@ class Organism():
                 self.biases[i] += np.random.normal(0, stdev, self.biases[i].shape)
 
 
-    def mate(self, other, mutate=True):
+    def mate(self, other, mutate=True, stdev=0.03):
         if self.use_bias != other.use_bias:
             raise ValueError('Both parents must use bias or not use bias')
         if not len(self.layers) == len(other.layers):
@@ -213,6 +218,6 @@ class Organism():
             child.layers[i] = pass_on * self.layers[i] + ~pass_on * other.layers[i]
             child.biases[i] = pass_on * self.biases[i] + ~pass_on * other.biases[i]
         if mutate:
-            child.mutate()
+            child.mutate(stdev=stdev)
         return child
 
