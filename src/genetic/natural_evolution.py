@@ -14,6 +14,7 @@ class NaturalEvolution():
     def __init__(self, n_actions, population_size=50, holdout=0.1, mating=True):
         self.file_path = "models/natural_evolution"
         self.generation = 0
+        self.specie = 0
         self.population_size = population_size
 
         if holdout == 'sqrt':
@@ -94,6 +95,7 @@ class NaturalEvolution():
 
         # Reseting steps
         if done:
+            self.specie += 1
             self.steps = 0
             self._last_population.append(
                 (self._last_acc_score, self._organism)
@@ -135,6 +137,7 @@ class NaturalEvolution():
         self.best_organism = copy.deepcopy(order_population[0])
         self.population = copy.deepcopy(new_population)
         self._last_population = []
+        self.specie = 0
 
 
     def save(self):
