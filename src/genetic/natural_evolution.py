@@ -1,6 +1,7 @@
 """
 https://towardsdatascience.com/evolving-neural-networks-b24517bb3701
 """
+import os
 import copy
 
 import numpy as np
@@ -28,10 +29,7 @@ class NaturalEvolution():
 
         self.n_actions = n_actions
         self.steps = 0
-        self.best_organism = {
-            "score": 0,
-            "organismo": None,
-        }
+        self.best_organism = None
 
         # ==Calculing the number of inputs==
         # There is 9 information of object,
@@ -53,7 +51,8 @@ class NaturalEvolution():
         self._last_acc_score_cache = 0
         self._generation_score = {}
 
-        self.load()
+        if os.path.exists(self.file_path+".dill"):
+            self.load()
 
 
     def _gen_organism(self):
@@ -151,7 +150,6 @@ class NaturalEvolution():
         result_load = utils.load(self.file_path)
         self.generation = result_load.get("generation", 0)
         self._last_population = result_load.get("population", [])
-        print(self._last_population)
         self._generation_score = result_load.get("scores", [])
         self._next_generation()
 
