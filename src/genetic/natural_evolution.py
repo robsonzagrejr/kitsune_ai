@@ -11,7 +11,7 @@ import src.genetic.utils as utils
 
 class NaturalEvolution():
 
-    def __init__(self, n_actions, population_size=5, holdout=0.1, mating=True):
+    def __init__(self, n_actions, population_size=50, holdout=0.1, mating=True):
         self.file_path = "models/natural_evolution"
         self.generation = 0
         self.population_size = population_size
