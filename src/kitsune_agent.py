@@ -27,6 +27,7 @@ class KitsuneAgent():
         self._frame = None
         self._objects = {}
         self._reset_state = self.env.reset_state
+        self.info = {}
 
         self.agent = None
 
@@ -125,6 +126,7 @@ class KitsuneAgent():
                 len(actions)-1, #Removing reset
                 **parameters
             )
+        self.info["algorithm"] = json_data["agent_type"]
 
         print("Successfully Loaded".center(30,"-"))
 
@@ -143,6 +145,10 @@ class KitsuneAgent():
         is_training = action_type == 'next_train_action'
 
         action = self.agent.step(state, reward, done, is_training)
+        if self.info["algorithm"] == "natural_evolution":
+            self.info["specie"] = self.agent.specie
+            self.info["generation"] = self.agent.generation
+            self.info["acc_reward"] = self.agent._last_acc_score
 
         # For some reason tis need to be a list of list
         result = {'action': [[int(action)]]}

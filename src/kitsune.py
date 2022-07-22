@@ -136,10 +136,35 @@ class Kitsune():
         )
         score_label.draw()
 
+        # Agent Info
+        agent_info = self.agent.info
+        algorithm_label = pyglet.text.Label(f'Algorithm: {agent_info.get("algorithm")}',
+            font_name='Times New Roman',
+            font_size=12,
+            x=self._window.width-10, y=self._window._height-40,
+            anchor_x='right', anchor_y='top'
+        )
+        algorithm_label.draw()
+        if agent_info.get("algorithm", "") == "natural_evolution":
+            generation_label = pyglet.text.Label(f'Generation: {agent_info.get("generation")}',
+                font_name='Times New Roman',
+                font_size=12,
+                x=self._window.width-10, y=self._window._height-60,
+                anchor_x='right', anchor_y='top'
+            )
+            generation_label.draw()
+            specie_label = pyglet.text.Label(f'Specie: {agent_info.get("specie")}',
+                font_name='Times New Roman',
+                font_size=12,
+                x=self._window.width-10, y=self._window._height-80,
+                anchor_x='right', anchor_y='top'
+            )
+            specie_label.draw()
+
 
         # Kitsune
         self.get_kitsune_image().blit(
-            self._window.width//4,self._window.height//2,
-            width=self._window.width//2, height=self._window.height//2
+            self._window.width//3,self._window.height//2,
+            width=self._window.width//3, height=self._window.height//2
         )
 
