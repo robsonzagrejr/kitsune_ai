@@ -10,6 +10,7 @@ import json
 
 from src.rl.qlearning import QLearning
 from src.rl.sarsa import Sarsa
+from src.genetic.natural_evolution import NaturalEvolution
 
 
 class KitsuneAgent():
@@ -19,7 +20,6 @@ class KitsuneAgent():
         # Removing 200 logging
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
-
         self.env = env
         self.view = view
         self.process = Thread(target=self.app.run, kwargs={'port':'5003'})
@@ -90,7 +90,9 @@ class KitsuneAgent():
     def route_env_action(self, env:str, action:str):
         # Implement Env step action
 
-        if self.env.is_training:
+        if int(action) == -1:
+            self.env.reset()
+        elif self.env.is_training:
             _ , reward, done = self.env.step(int(action))
         else:
             self.env.action = int(action)
@@ -110,12 +112,17 @@ class KitsuneAgent():
 
         if json_data['agent_type'] == "qlearning":
             self.agent = QLearning(
-                len(actions),
+                len(actions)-1,
                 **parameters
             )
         if json_data['agent_type'] == "py_sarsa":
             self.agent = Sarsa(
-                len(actions),
+                len(actions)-1,
+                **parameters
+            )
+        if json_data['agent_type'] == "natural_evolution":
+            self.agent = NaturalEvolution(
+                len(actions)-1, #Removing reset
                 **parameters
             )
 
@@ -137,11 +144,6 @@ class KitsuneAgent():
 
         action = self.agent.step(state, reward, done, is_training)
 
-        """
-        if action_type == "next_best_action":
-            action = agents[agent_id].inference(np.array(json_data['state'], dtype=json_data['state_type']),
-                                          json_data['reward'], json_data['is_terminal'])
-        """
         # For some reason tis need to be a list of list
         result = {'action': [[int(action)]]}
         return jsonify(result)

@@ -23,6 +23,7 @@ public class BeliefBaseRL extends DefaultBeliefBase {
 	public static final String SARSA_ID = "sarsa";
 	public static final String QLEARNING_ID = "qlearning";
 	public static final String PYSARSA_ID = "py_sarsa";
+	public static final String NATURALEVOLUTION_ID= "natural_evolution";
 
 	Agent agentReference;
 
@@ -98,6 +99,8 @@ public class BeliefBaseRL extends DefaultBeliefBase {
 						rl.put(goal, new PyAlgorithm(goal, QLEARNING_ID));
 					} else if(algorithm.equals(PYSARSA_ID)) {
 						rl.put(goal, new PyAlgorithm(goal, PYSARSA_ID));
+					} else if(algorithm.equals(NATURALEVOLUTION_ID)) {
+						rl.put(goal, new PyAlgorithm(goal, NATURALEVOLUTION_ID));
 					} else if(algorithm.equals(SARSA_ID)) {
 						rl.put(goal, new Sarsa(goal));
 					} else {
