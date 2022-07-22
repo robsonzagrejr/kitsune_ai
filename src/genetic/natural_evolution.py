@@ -4,11 +4,14 @@ https://towardsdatascience.com/evolving-neural-networks-b24517bb3701
 import copy
 
 import numpy as np
+import src.genetic.utils as utils
+
 
 
 class NaturalEvolution():
 
     def __init__(self, n_actions, population_size=5, holdout=0.1, mating=True):
+        self.file_path = "models/natural_evolution"
         self.generation = 0
         self.population_size = population_size
 
@@ -48,6 +51,9 @@ class NaturalEvolution():
         self._organism = self.population.pop()
         self._last_acc_score = 0
         self._last_acc_score_cache = 0
+        self._generation_score = {}
+
+        self.load()
 
 
     def _gen_organism(self):
@@ -108,11 +114,13 @@ class NaturalEvolution():
 
 
     def _next_generation(self):
+        order_population = sorted(self._last_population, key=lambda x: x[0], reverse=True)
+        self._generation_score[self.generation] = order_population[0][0]
+        order_population = [o[1] for o in order_population]
+        self.save()
+
         self.generation += 1
         print(f"Creating Generation: {self.generation}")
-
-        order_population = sorted(self._last_population, key=lambda x: x[0], reverse=True)
-        order_population = [o[1] for o in order_population]
         new_population = []
         for i in range(self.population_size):
             parent_1_idx = i % self.holdout
@@ -125,30 +133,27 @@ class NaturalEvolution():
 
         # Ensure best organism survives
         new_population[-1] = order_population[0]
+        self.best_organism = copy.deepcopy(order_population[0])
         self.population = copy.deepcopy(new_population)
         self._last_population = []
 
 
-    def generation(self, repeats=1, keep_best=True):
-        rewards = [np.mean([self.scoring_function(x) for _ in range(repeats)]) for x in self.population]
-        self.population = [self.population[x] for x in np.argsort(rewards)[::-1]]
-        new_population = []
-        for i in range(self.population_size):
-            parent_1_idx = i % self.holdout
-            if self.mating:
-                parent_2_idx = min(self.population_size - 1, int(np.random.exponential(self.holdout)))
-            else:
-                parent_2_idx = parent_1_idx
-            offspring = self.population[parent_1_idx].mate(self.population[parent_2_idx])
-            new_population.append(offspring)
-        if keep_best:
-            new_population[-1] = self.population[0] # Ensure best organism survives
-        self.population = new_population
+    def save(self):
+        result_to_save = {
+            "generation": self.generation,
+            "population": self._last_population,
+            "scores": self._generation_score,
+        }
+        utils.save(result_to_save, self.file_path)
 
-        # Ensure best organism survives
-        new_population[-1] = self.population[0]
-        self.population = new_population
 
+    def load(self):
+        result_load = utils.load(self.file_path)
+        self.generation = result_load.get("generation", 0)
+        self._last_population = result_load.get("population", [])
+        print(self._last_population)
+        self._generation_score = result_load.get("scores", [])
+        self._next_generation()
 
 
 class Organism():
@@ -184,28 +189,6 @@ class Organism():
                 X = np.clip(X, 0, np.inf)  # ReLU
         
         return X
-
-
-    #FIXME ?
-    def predict_choice(self, X, deterministic=True):
-        probabilities = self.predict(X)
-        if deterministic:
-            return np.argmax(probabilities, axis=1).reshape((-1, 1))
-
-        if any(np.sum(probabilities, axis=1) != 1):
-            raise ValueError(f'Output values must sum to 1 to use deterministic=False')
-        if any(probabilities < 0):
-            raise ValueError(f'Output values cannot be negative to use deterministic=False')
-        choices = np.zeros(X.shape[0])
-        for i in range(X.shape[0]):
-            U = np.random.rand(X.shape[0])
-            c = 0
-            while U > probabilities[i, c]:
-                U -= probabilities[i, c]
-                c += 1
-            else:
-                choices[i] = c
-        return choices.reshape((-1,1))
 
 
     def mutate(self, stdev=0.03):
