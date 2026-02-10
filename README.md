@@ -3,7 +3,35 @@
 
 > Modular AI framework for NES games using Reinforcement Learning, Evolutionary Algorithm, BDI reasoning, and multi-language integration
 
----
+<div align="center" style="background-color: white">
+
+<table>
+  <tr>
+    <!-- Big image on the left -->
+    <td bgcolor="white">
+      Architecture
+      <img src="assets/Arquitetura.png" width="400">
+    </td>
+    <!-- Small images on the right -->
+    <td>
+      Object Detections
+      <img src="assets/kitsune_view_screen.png" width="300">
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Enviroment Module Diagram
+      <img src="assets/KitsuneEnv.png" width="350">
+    </td>
+    <td>
+      Agent Module Diagram
+      <img src="assets/KitsuneAgent.png" width="350">
+    </td>
+  </tr>
+</table>
+
+</div>
+
 
 ## About the Project
 
